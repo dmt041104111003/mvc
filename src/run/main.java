@@ -3,7 +3,6 @@ package run;
 import java.awt.EventQueue;
 
 import view.frame;
-
 public class main {
 
 	public static void main(String[] args) {
