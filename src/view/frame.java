@@ -43,6 +43,7 @@ public class frame {
     private JLabel highScoreLabel;
     private JLabel[] queuePicLabels;
     private Font pixelFont;
+    private int currentBackground = 0;
 
     public frame() {
 
@@ -89,17 +90,37 @@ public class frame {
     private void initFrameBackground() {
         try {
         	ImageIcon backgroundImage = new ImageIcon(ImageIO.read(new File("design/background.jpg")));
-            Image scaledImage = backgroundImage.getImage().getScaledInstance(418, 561, Image.SCALE_SMOOTH);
-            ImageIcon scaledBackgroundImage = new ImageIcon(scaledImage);
+        	int frameWidth = jframe.getWidth();
+            int frameHeight = jframe.getHeight();
+            int imageWidth = backgroundImage.getIconWidth();
+            int imageHeight = backgroundImage.getIconHeight();
+            double widthRatio = (double) frameWidth / imageWidth;
+            double heightRatio = (double) frameHeight / imageHeight;
+            double scale = Math.max(widthRatio, heightRatio);
+            int newWidth = (int) (imageWidth * scale);
+            int newHeight = (int) (imageHeight * scale);
+            Image scaledImage = backgroundImage.getImage().getScaledInstance(newWidth, newHeight, Image.SCALE_SMOOTH);            ImageIcon scaledBackgroundImage = new ImageIcon(scaledImage);
             backgroundLabel = new JLabel(scaledBackgroundImage);
-            backgroundLabel.setBounds(0,0, 402, 522);
+            backgroundLabel.setBounds(0, 0, frameWidth, frameHeight);
             jframe.add(backgroundLabel);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
- 
+    private void changeBackgroundImage() {
+        try {
+            if (currentBackground == 0) {
+                backgroundLabel.setIcon(new ImageIcon(ImageIO.read(new File("design/background-2.jpg"))));
+                currentBackground = 1;
+            } else if (currentBackground == 1) {
+                backgroundLabel.setIcon(new ImageIcon(ImageIO.read(new File("design/background.jpg"))));
+                currentBackground = 0;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
     private void initStartPanel() {
         startPanel = new JPanel();
         startPanel.setBounds(10, 110, 382, 200);
@@ -107,18 +128,21 @@ public class frame {
         startPanel.setLayout(new BoxLayout(startPanel, BoxLayout.Y_AXIS));
 
         titleLabel = new JLabel("Tetris");
+        titleLabel.setForeground(Color.BLACK);
         titleLabel.setFont(pixelFont);
         titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         titleLabel.setFont(pixelFont.deriveFont(70f));
         startPanel.add(titleLabel);
 
         JLabel startGameLabel = new JLabel("Start");
+        startGameLabel.setForeground(Color.BLACK);
         startGameLabel.setFont(pixelFont);
         startGameLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         startGameLabel.setFont(pixelFont.deriveFont(40f));
         startPanel.add(startGameLabel);
 
         JLabel switchThemeLabel = new JLabel("Switch Theme");
+        switchThemeLabel.setForeground(Color.BLACK);
         switchThemeLabel.setFont(pixelFont);
         switchThemeLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         switchThemeLabel.setFont(pixelFont.deriveFont(40f));
@@ -138,18 +162,21 @@ public class frame {
             }
 
             public void mouseExited(MouseEvent e) {
-                startGameLabel.setForeground(new Color(51, 51, 51));
+                startGameLabel.setForeground(Color.BLACK);
             }
         });
 
         switchThemeLabel.addMouseListener(new MouseAdapter() {
-  
+            public void mouseClicked(MouseEvent e) {
+                changeBackgroundImage();
+            }
+
             public void mouseEntered(MouseEvent e) {
                 switchThemeLabel.setForeground(Color.WHITE);
             }
 
             public void mouseExited(MouseEvent e) {
-                switchThemeLabel.setForeground(new Color(51, 51, 51));
+                switchThemeLabel.setForeground(Color.BLACK);
             }
         });
     }
@@ -191,6 +218,7 @@ public class frame {
         scorePanel.setOpaque(false);
         scorePanel.setBorder(new LineBorder(Color.BLACK, 2));
         scoreLabel = new JLabel("Score: 0");
+        scoreLabel.setForeground(Color.BLACK);
         scoreLabel.setFont(pixelFont);
         scorePanel.add(scoreLabel);
         gamePanel.add(scorePanel);
@@ -201,6 +229,7 @@ public class frame {
         levelPanel.setOpaque(false);
         levelPanel.setBorder(new LineBorder(Color.BLACK, 2));
         levelLabel = new JLabel("Level: 0");
+        levelLabel.setForeground(Color.BLACK);
         levelLabel.setFont(pixelFont);
         levelPanel.add(levelLabel);
         gamePanel.add(levelPanel);
@@ -211,6 +240,7 @@ public class frame {
         linesPanel.setOpaque(false);
         linesPanel.setBorder(new LineBorder(Color.BLACK, 2));
         linesLabel = new JLabel("Lines: 0");
+        linesLabel.setForeground(Color.BLACK);
         linesLabel.setFont(pixelFont);
         linesPanel.add(linesLabel);
         gamePanel.add(linesPanel);
@@ -229,7 +259,8 @@ public class frame {
     }
     private void initHoldPanel() {
         JLabel holdLabel = new JLabel("Hold Block (H)");
-        holdLabel.setFont(pixelFont);
+        holdLabel.setForeground(Color.BLACK);
+        holdLabel.setFont(pixelFont.deriveFont(15f));
         JPanel holdPanel = new JPanel();
         holdPanel.setBounds(272, 330, 120, 90);
         holdPanel.setBackground(null);
@@ -249,18 +280,26 @@ public class frame {
         gamePanel.add(pauseCoverPanel);
 
         JLabel pauseCoverLabel = new JLabel("Paused");
+        pauseCoverLabel.setForeground(Color.BLACK);
         pauseCoverLabel.setFont(pixelFont.deriveFont(70f));
         pauseCoverLabel.setForeground(Color.WHITE);
         pauseCoverPanel.add(pauseCoverLabel);
 
         JPanel pausePanel = new JPanel();
+        pausePanel.setForeground(Color.BLACK);
         pausePanel.setBounds(272, 430, 120, 30);
         pausePanel.setOpaque(false);
         pausePanel.setBorder(new LineBorder(Color.BLACK, 2));
 
         JLabel pauseLabel = new JLabel("Pause (P)");
-        pauseLabel.setFont(pixelFont.deriveFont(26f));
+        pauseLabel.setForeground(Color.BLACK);
+        pauseLabel.setFont(pixelFont.deriveFont(19f));
         pausePanel.add(pauseLabel);
+        pausePanel.setLayout(new BoxLayout(pausePanel, BoxLayout.Y_AXIS));
+
+        pauseLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        pauseLabel.setAlignmentY(Component.CENTER_ALIGNMENT);
+
 
         gamePanel.add(pausePanel);
 
@@ -272,7 +311,7 @@ public class frame {
             }
 
             public void mouseExited(MouseEvent e) {
-                pauseLabel.setForeground(new Color(51, 51, 51));
+                pauseLabel.setForeground(Color.BLACK);
             }
         });
     }
@@ -283,21 +322,25 @@ public class frame {
         gameOverPanel.setLayout(new BoxLayout(gameOverPanel, BoxLayout.Y_AXIS));
 
         JLabel gameOverLabel = new JLabel("Game Over");
+        gameOverLabel.setForeground(Color.BLACK);
         gameOverLabel.setFont(pixelFont.deriveFont(70f));
         gameOverLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         gameOverPanel.add(gameOverLabel);
 
         highScoreLabel = new JLabel("High Score: 0");
+        highScoreLabel.setForeground(Color.BLACK);
         highScoreLabel.setFont(pixelFont.deriveFont(40f));
         highScoreLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         gameOverPanel.add(highScoreLabel);
 
         gameOverScoreLabel = new JLabel("Score: 0");
+        gameOverScoreLabel.setForeground(Color.BLACK);
         gameOverScoreLabel.setFont(pixelFont.deriveFont(40f));
         gameOverScoreLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         gameOverPanel.add(gameOverScoreLabel);
 
         JLabel playAgainLabel = new JLabel("Play Again?");
+        playAgainLabel.setForeground(Color.BLACK);
         playAgainLabel.setFont(pixelFont.deriveFont(40f));
         playAgainLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         gameOverPanel.add(playAgainLabel);
@@ -309,7 +352,7 @@ public class frame {
             }
 
             public void mouseExited(MouseEvent e) {
-                playAgainLabel.setForeground(new Color(51, 51, 51));
+                playAgainLabel.setForeground(Color.BLACK);
             }
         });
         gameOverPanel.setVisible(false);
@@ -321,7 +364,6 @@ public class frame {
 
 
  
-
 
 
 
