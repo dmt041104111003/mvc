@@ -13,7 +13,6 @@ import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.border.LineBorder;
 
 import java.awt.event.KeyAdapter;
@@ -401,12 +400,6 @@ import controller.logic;
                     playAgainLabel.setForeground(Color.BLACK);
                 }
             });
-            JScrollPane scrollPane = new JScrollPane(gameOverPanel);
-            scrollPane.setBounds(10, 110, 382, 200);
-            scrollPane.setOpaque(false);
-            scrollPane.getViewport().setOpaque(false);
-            scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-            scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 
             
             gameOverPanel.setVisible(false);
