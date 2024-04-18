@@ -21,6 +21,7 @@ import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
 
+import controller.logic;
 public class frame {
 
     private JFrame jframe;
@@ -44,8 +45,11 @@ public class frame {
     private JLabel[] queuePicLabels;
     private Font pixelFont;
     private int currentBackground = 0;
+    private final logic game;
 
-    public frame() {
+    
+    public frame(logic newGame) {
+        game = newGame;
 
         frame_tetris();
         initFont();
@@ -89,7 +93,7 @@ public class frame {
 
     private void initFrameBackground() {
         try {
-        	ImageIcon backgroundImage = new ImageIcon(ImageIO.read(new File("design/background.jpg")));
+        	ImageIcon backgroundImage = new ImageIcon(ImageIO.read(new File("design/background.png")));
         	int frameWidth = jframe.getWidth();
             int frameHeight = jframe.getHeight();
             int imageWidth = backgroundImage.getIconWidth();
@@ -99,7 +103,8 @@ public class frame {
             double scale = Math.max(widthRatio, heightRatio);
             int newWidth = (int) (imageWidth * scale);
             int newHeight = (int) (imageHeight * scale);
-            Image scaledImage = backgroundImage.getImage().getScaledInstance(newWidth, newHeight, Image.SCALE_SMOOTH);            ImageIcon scaledBackgroundImage = new ImageIcon(scaledImage);
+            Image scaledImage = backgroundImage.getImage().getScaledInstance(newWidth, newHeight, Image.SCALE_SMOOTH);           
+            ImageIcon scaledBackgroundImage = new ImageIcon(scaledImage);
             backgroundLabel = new JLabel(scaledBackgroundImage);
             backgroundLabel.setBounds(0, 0, frameWidth, frameHeight);
             jframe.add(backgroundLabel);
@@ -114,7 +119,7 @@ public class frame {
                 backgroundLabel.setIcon(new ImageIcon(ImageIO.read(new File("design/background-2.jpg"))));
                 currentBackground = 1;
             } else if (currentBackground == 1) {
-                backgroundLabel.setIcon(new ImageIcon(ImageIO.read(new File("design/background.jpg"))));
+                backgroundLabel.setIcon(new ImageIcon(ImageIO.read(new File("design/background.png"))));
                 currentBackground = 0;
             }
         } catch (IOException e) {
@@ -359,7 +364,8 @@ public class frame {
         jframe.add(gameOverPanel);
     }
 
- 
+  
+
 }
 
 
