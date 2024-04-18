@@ -1,6 +1,7 @@
 package model;
 
-import java.awt.Color;
+
+import java.awt.*;
 
 public class block {
 
@@ -9,13 +10,11 @@ public class block {
     private int[][] blockLocation;
     private Color blockColor;
 
-
     public block(int newBlockType) {
         blockType = newBlockType;
         blockRotation = 0;
         setNewBlockLocationAndColor(newBlockType);
     }
-
 
     private void setNewBlockLocationAndColor(int newBlockType) {
         blockLocation = new int[4][2];
@@ -71,28 +70,22 @@ public class block {
             }
         }
     }
-
-
     public void moveBlockDown() {
         for (int i = 0; i < 4; i++) {
             blockLocation[i][1]++;
         }
     }
-
     public void moveBlockLeft() {
         for (int i = 0; i < 4; i++) {
             blockLocation[i][0]--;
         }
     }
 
- 
     public void moveBlockRight() {
         for (int i = 0; i < 4; i++) {
             blockLocation[i][0]++;
         }
     }
-
-
     public void setNewLocation(int[][] newLocation) {
         for (int i = 0; i < 4; i++) {
             blockLocation[i][0] = newLocation[i][0];
@@ -100,17 +93,14 @@ public class block {
         }
     }
 
-
     public void setBlockRotation(int blockRotation) {
         this.blockRotation = blockRotation;
     }
-
 
     public int getBlockType() {
         return blockType;
     }
 
-  
     public int getBlockRotation() {
         return blockRotation;
     }
@@ -119,7 +109,6 @@ public class block {
         return blockLocation;
     }
 
- 
     public Color getBlockColor() {
         return blockColor;
     }

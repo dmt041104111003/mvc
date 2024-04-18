@@ -1,19 +1,14 @@
 package controller;
 
-import java.awt.Color;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.awt.*;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.concurrent.ThreadLocalRandom;
 
 import model.block;
-
 public class logic {
+
     private block currentBlock;
 
     private int[] blockQueue;
@@ -32,20 +27,15 @@ public class logic {
 
     private final ArrayList<int[]> setBlocks;
 
-	private BufferedReader bufferedReader;
-
     public logic() {
         initBlockQueue();
         setBlocks = new ArrayList<>();
         previousBlockPos = new int[4][2];
     }
-
-
     public void startGame() {
         running = true;
         nextBlock();
     }
-
     public void resetGame() {
         fallDelay = 200;
         currentHoldBlock = -1;
@@ -59,34 +49,26 @@ public class logic {
         setBlocks.clear();
         startGame();
     }
-
-
     private void initBlockQueue() {
         blockQueue = new int[3];
         for (int i = 0 ; i < 3; i++) {
             blockQueue[i] = ThreadLocalRandom.current().nextInt(0, 7);
         }
     }
-
     public void shuffleAndAddToQueue() {
         blockQueue[0] = blockQueue[1];
         blockQueue[1] = blockQueue[2];
         blockQueue[2] = ThreadLocalRandom.current().nextInt(0, 7);
     }
-
-
     public void nextBlock() {
         currentBlock = new block(blockQueue[0]);
         shuffleAndAddToQueue();
     }
-
-
     public void updatePreviousBlockPos() {
         for (int i = 0; i < 4; i++) {
             previousBlockPos[i] = Arrays.copyOf(currentBlock.getBlockLocation()[i], currentBlock.getBlockLocation()[i].length);
         }
     }
-
     public boolean isTouchingBottomOrBlock() {
         for (int i = 0; i < 4; i++) {
             if (currentBlock.getBlockLocation()[i][1] == 19) {
@@ -101,18 +83,14 @@ public class logic {
         }
         return false;
     }
-
-
     public void moveBlockDown() {
         currentBlock.moveBlockDown();
     }
-
     public void addCurrentToSetBlock() {
         for (int i = 0; i < 4; i++) {
             setBlocks.add(new int[]{currentBlock.getBlockLocation()[i][0], currentBlock.getBlockLocation()[i][1]});
         }
     }
-
     public ArrayList<Integer> checkForFullRows() {
         ArrayList<Integer> rowsToRemove = new ArrayList<>();
         for (int i = 19; i > -1; i--) {
@@ -133,8 +111,6 @@ public class logic {
         }
         return rowsToRemove;
     }
-
-
     public void updateScoreAndLevel(int rowToRemoveCount) {
         switch (rowToRemoveCount) {
             case 1 -> score += 40;
@@ -149,7 +125,6 @@ public class logic {
             increaseLevel();
         }
     }
-
     public void increaseLevel() {
         level++;
         if (level < 10) {
@@ -161,8 +136,6 @@ public class logic {
         }
         requiredLineClears = level * 10;
     }
-
-
     public boolean checkIfGameOver() {
         for (int i = 0; i < 4; i++) {
             if (currentBlock.getBlockLocation()[i][1] == 0) {
@@ -172,8 +145,6 @@ public class logic {
         }
         return false;
     }
-
-
     public void moveSide(int dir) {
         if (!isTouchingSideOrBlock(dir)) {
             updatePreviousBlockPos();
@@ -184,7 +155,6 @@ public class logic {
             }
         }
     }
-
     public boolean isTouchingSideOrBlock(int dir) {
         for (int i = 0; i < 4; i++) {
             if (dir == 0) {
@@ -211,7 +181,6 @@ public class logic {
         }
         return false;
     }
-
     public void rotateBlock() {
         int[][] rotateLoc = new int[4][2];
         int newBlockRotation = 0;
@@ -434,14 +403,12 @@ public class logic {
             currentBlock.setBlockRotation(newBlockRotation);
         }
     }
-
-
     public int getHighScoreFromFile() {
         int highScore = -1;
         try {
             File highScoreFile = new File("design/highscore.txt");
             FileReader fileReader = new FileReader(highScoreFile);
-            bufferedReader = new BufferedReader(fileReader);
+            BufferedReader bufferedReader = new BufferedReader(fileReader);
             String buffer;
             while ((buffer = bufferedReader.readLine()) != null) {
                 highScore = Integer.parseInt(buffer);
@@ -451,11 +418,9 @@ public class logic {
         }
         return highScore;
     }
-
-
     public void writeHighScoreToFile(int highScore) {
         try {
-            File highScoreFile = new File("resources/highscore.txt");
+            File highScoreFile = new File("design/highscore.txt");
             FileWriter fileWriter = new FileWriter(highScoreFile);
             BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
             bufferedWriter.write(highScore + "");
@@ -465,15 +430,11 @@ public class logic {
             e.printStackTrace();
         }
     }
-
-
     public void checkIfHighScore() {
         if (score > getHighScoreFromFile()) {
             writeHighScoreToFile(score);
         }
     }
-
-
     public boolean isHeldThisTurn() {
         return heldThisTurn;
     }
@@ -529,7 +490,6 @@ public class logic {
     public int getCurrentBlockType() {
         return currentBlock.getBlockType();
     }
-
     public void setHeldThisTurn(boolean heldThisTurn) {
         this.heldThisTurn = heldThisTurn;
     }
@@ -561,6 +521,5 @@ public class logic {
     public void clearSetBlocks() {
         setBlocks.clear();
     }
-
 }
 
