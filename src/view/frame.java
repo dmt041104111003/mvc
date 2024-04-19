@@ -90,7 +90,6 @@ import controller.logic;
 		private JLabel howtoplaygame;
 		private int highestScore;
 		private boolean isSoundPlaying = false;
-		private boolean musicBlockSoundPlaying = false;
 	    private Clip clip;
 
 		private JLabel music;
@@ -454,7 +453,7 @@ import controller.logic;
             scorePanel.setOpaque(false);
             scorePanel.setBorder(new LineBorder(Color.BLACK, 2));
             scoreLabel = new JLabel("Score: 0");
-            scoreLabel.setFont(pixelFont);
+            scoreLabel.setFont(pixelFont.deriveFont(14f));
             scoreLabel.setForeground(Color.BLACK);
             scorePanel.add(scoreLabel);
             gamePanel.add(scorePanel);
@@ -466,7 +465,7 @@ import controller.logic;
             levelPanel.setBorder(new LineBorder(Color.BLACK, 2));
             levelLabel = new JLabel("Level: 0");
             levelLabel.setForeground(Color.BLACK);
-            levelLabel.setFont(pixelFont);
+            levelLabel.setFont(pixelFont.deriveFont(14f));
             levelPanel.add(levelLabel);
             gamePanel.add(levelPanel);
         }
@@ -476,7 +475,7 @@ import controller.logic;
             linesPanel.setOpaque(false);
             linesPanel.setBorder(new LineBorder(Color.BLACK, 2));
             linesLabel = new JLabel("Lines: 0");
-            linesLabel.setFont(pixelFont);
+            linesLabel.setFont(pixelFont.deriveFont(14f));
             linesLabel.setForeground(Color.BLACK);
             linesPanel.add(linesLabel);
             gamePanel.add(linesPanel);
@@ -955,11 +954,12 @@ import controller.logic;
                     } catch (InterruptedException ignored) {}
                 }
             }
-            for (Integer i: rowsToRemove) {
+            for (Integer i : rowsToRemove) {
+                boolean musicBlockSoundPlaying = false;  
                 for (int j = 0; j < 10; j++) {
                     for (int k = 0; k < game.getSetBlocks().size(); k++) {
                         if (Arrays.equals(new int[]{j, i}, game.getSetBlocks().get(k))) {
-                        	if (!musicBlockSoundPlaying) {
+                            if (!musicBlockSoundPlaying) {
                                 SoundManager("design/music-block.wav");
                                 musicBlockSoundPlaying = true; 
                             }
@@ -974,11 +974,9 @@ import controller.logic;
                 if (removedRowCount >= 2) {
                     SoundManager("design/3Lines.wav");
                     removedRowCount = 0;
-                    if (musicBlockSoundPlaying) {
-                        musicBlockSoundPlaying = false;
-                    }
                 }
             }
+
             Collections.reverse(rowsToRemove);
             for (Integer i: rowsToRemove) {
                 Color[][] gridColors = new Color[10][i];
