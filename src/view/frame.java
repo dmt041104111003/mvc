@@ -2,7 +2,6 @@ package view;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontFormatException;
 import java.awt.Image;
@@ -19,20 +18,23 @@ import java.util.Collections;
 import java.util.concurrent.ThreadLocalRandom;
 
 import javax.imageio.ImageIO;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.LineEvent;
+import javax.sound.sampled.LineListener;
+import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.swing.BorderFactory;
-import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.SwingConstants;
 import javax.swing.border.Border;
 import javax.swing.border.LineBorder;
 
 import controller.logic;
-
 
     public class frame {
 
@@ -58,7 +60,7 @@ import controller.logic;
         private JLabel[] queuePicLabels;
 
         private Font pixelFont;
-		private Component imageLabel;
+		private JLabel imageLabel;
 
         private ImageIcon iBlockIcon;
         private ImageIcon jBlockIcon;
@@ -69,9 +71,7 @@ import controller.logic;
         private ImageIcon zBlockIcon;
 
         private boolean isHighScoreVisible = false;
-        private JLabel howToPlayTextLabel;
 		private boolean isTextDisplayed = false;
-        private Component spaceLabel;
 
         private Thread titleLabelThread;
         private Thread blockGravityThread;
@@ -86,9 +86,13 @@ import controller.logic;
 
 		private JLabel howtoplaygame;
 		private int highestScore;
+		private boolean isSoundPlaying = false;
+	    private Clip clip;
+
+		private JLabel music;
         public frame(logic newGame) {
             game = newGame;
-            
+//            playSound("design/music-full.wav");
             highestScore = game.getHighScoreFromFile();
             frame_tetris();
             initFont();
@@ -147,9 +151,12 @@ import controller.logic;
                 e.printStackTrace();
             }
         }
+
+       
+        
         private void initStartPanel() {
             startPanel = new JPanel();
-            startPanel.setBounds(10, 110, 382, 370);
+            startPanel.setBounds(10, 77, 382, 437);
             startPanel.setOpaque(false);
             startPanel.setLayout(new BoxLayout(startPanel, BoxLayout.Y_AXIS));
 
@@ -175,8 +182,6 @@ import controller.logic;
             high_score.setFont(pixelFont.deriveFont(25f));
             startPanel.add(high_score);
             
-            
-            
             howtoplaygame = new JLabel("How to play");
             howtoplaygame.setFont(pixelFont);
             howtoplaygame.setForeground(Color.BLACK);
@@ -184,6 +189,13 @@ import controller.logic;
             howtoplaygame.setFont(pixelFont.deriveFont(25f));
             startPanel.add(howtoplaygame);
 
+            music = new JLabel("Music on");
+            music.setFont(pixelFont);
+            music.setForeground(Color.BLACK);
+            music.setAlignmentX(Component.CENTER_ALIGNMENT);
+            music.setFont(pixelFont.deriveFont(25f));
+            startPanel.add(music);
+            
             JLabel switchThemeLabel = new JLabel("Switch Theme");
             switchThemeLabel.setFont(pixelFont);
             switchThemeLabel.setForeground(Color.BLACK);
@@ -197,7 +209,12 @@ import controller.logic;
             exit.setAlignmentX(Component.CENTER_ALIGNMENT);
             exit.setFont(pixelFont.deriveFont(25f));
             startPanel.add(exit);
-            
+
+//      	  JLabel soundStatusLabel = new JLabel("Off");
+//            soundStatusLabel.setFont(pixelFont.deriveFont(20f));
+//            soundStatusLabel.setForeground(Color.BLACK);
+//            soundStatusLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+//            startPanel.add(soundStatusLabel);
             jframe.getContentPane().add(startPanel);
 
             startGameLabel.addMouseListener(new MouseAdapter() {
@@ -223,7 +240,28 @@ import controller.logic;
                     startGameLabel.setForeground(Color.BLACK);
                 }
             });
+            music.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                	
+                      if (isSoundPlaying) {
+                          music.setText("Music on");
+                      } else {
+                          music.setText("Music off");
+                      }
+                	toggleSound();
+                }
 
+                @Override
+                public void mouseEntered(MouseEvent e) {
+                	music.setForeground(Color.WHITE);
+                }
+
+                @Override
+                public void mouseExited(MouseEvent e) {
+                	music.setForeground(Color.BLACK);
+                }
+            });
             switchThemeLabel.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
@@ -267,26 +305,21 @@ import controller.logic;
 				            isHighScoreVisible = false;
 				            startPanel.revalidate();
 				            startPanel.repaint();
-	                         startPanel.remove(spaceLabel);
-
 				        }
 					if (isTextDisplayed) {
 					    startPanel.remove(imageLabel);
-                        startPanel.remove(spaceLabel);
-
 					    isTextDisplayed = false;
 					} else {
 
-					    ImageIcon originalIcon = new ImageIcon("design/SBlock.png");
+					    ImageIcon originalIcon = new ImageIcon("design/how.png");
 
 					    Image originalImage = originalIcon.getImage();
 
-					    Image scaledImage = originalImage.getScaledInstance(100, 100, Image.SCALE_SMOOTH);
+					    Image scaledImage = originalImage.getScaledInstance(250, 200, Image.SCALE_SMOOTH);
 
 					    ImageIcon scaledIcon = new ImageIcon(scaledImage);
 
 					    imageLabel = new JLabel(scaledIcon);
-					    
 					    startPanel.add(imageLabel);
 
 					    isTextDisplayed = true;
@@ -315,12 +348,9 @@ import controller.logic;
                          isTextDisplayed = false;
                          startPanel.revalidate();
                          startPanel.repaint();
-                         startPanel.remove(spaceLabel);
-
                      }
                 	 if (isHighScoreVisible) {
                          startPanel.remove(highLabel);
-                         startPanel.remove(spaceLabel);
 
                          isHighScoreVisible = false;
                      } else {
@@ -331,9 +361,6 @@ import controller.logic;
                          highLabel.setFont(pixelFont.deriveFont(25f));
                          Border border = BorderFactory.createLineBorder(Color.BLACK, 2);
                          highLabel.setBorder(border);
-                         spaceLabel = Box.createVerticalStrut(60);
-                         
-                         startPanel.add(spaceLabel);
                          startPanel.add(highLabel);
                          isHighScoreVisible = true;
                      }
@@ -352,7 +379,38 @@ import controller.logic;
                 }
             });
         }
-        
+
+        private void playSound(String filePath) {
+            try {
+                File audioFile = new File(filePath);
+                AudioInputStream audioStream = AudioSystem.getAudioInputStream(audioFile);
+                if (isSoundPlaying) {
+                    stopSound();
+                } else {
+                    clip = AudioSystem.getClip();
+                    clip.open(audioStream);
+                    clip.loop(Clip.LOOP_CONTINUOUSLY);
+                    clip.start();
+                    isSoundPlaying = true;
+                }
+            } catch (UnsupportedAudioFileException | LineUnavailableException | IOException e) {
+                e.printStackTrace();
+            }
+        }
+        private void stopSound() {
+            if (clip != null && clip.isRunning()) {
+                clip.stop();
+            }                isSoundPlaying = false;
+
+        }
+
+        private void toggleSound() {
+            if (isSoundPlaying) {
+                stopSound();
+            } else {
+                playSound("design/music-full.wav");
+            }
+        }
 
         private void initGamePanel() {
             gamePanel = new JPanel();
@@ -770,7 +828,7 @@ import controller.logic;
         private void showGameOverMessage() {
             gamePanel.setVisible(false);
             gameOverScoreLabel.setText("Score: " + game.getScore());
-            highScoreLabel.setText("High Score: " + highestScore);
+            highScoreLabel.setText("High Score: " + game.getHighScoreFromFile());
             gameOverPanel.setVisible(true);
         }
         public void gameOverAnimation() {

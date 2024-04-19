@@ -406,7 +406,7 @@ public class logic {
         }
     }
     public int getHighScoreFromFile() {
-        int highScore = -1;
+        int highScore = 0;
         try {
             File highScoreFile = new File("design/highscore.txt");
             FileReader fileReader = new FileReader(highScoreFile);

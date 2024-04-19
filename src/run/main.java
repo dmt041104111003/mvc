@@ -1,6 +1,8 @@
 package run;
 
+import java.awt.EventQueue;
 import controller.logic;
+
 import view.frame;
 public class main {
 
