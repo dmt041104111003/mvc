@@ -13,7 +13,7 @@ public class logic {
 
     private int[] blockQueue;
     private final int[][] previousBlockPos;
-    private int fallDelay = 200;
+    private int fallDelay = 500;
     private int currentHoldBlock = -1;
     private int score = 0;
     private int level = 0;
@@ -39,7 +39,7 @@ public class logic {
         nextBlock();
     }
     public void resetGame() {
-        fallDelay = 200;
+        fallDelay = 500;
         currentHoldBlock = -1;
         score = 0;
         level = 0;
@@ -115,18 +115,18 @@ public class logic {
     }
     public void updateScoreAndLevel(int rowToRemoveCount) {
         switch (rowToRemoveCount) {
-            case 1 -> score += 40;
-            case 2 -> score += 100;
-            case 3 -> score += 300;
-            case 4 -> score += 1200;
+            case 1 -> score += 100 * (level + 1);
+            case 2 -> score += 300 * (level + 1);
+            case 3 -> score += 500 * (level + 1);
+            case 4 -> score += 800 * (level + 1);
         }
         totalLines += rowToRemoveCount;
         clearedLines += rowToRemoveCount;
-        if (clearedLines >= requiredLineClears) {
-            clearedLines = clearedLines - requiredLineClears;
+        if (clearedLines >= (level + 1) * 10) {
             increaseLevel();
         }
     }
+
     public void increaseLevel() {
         level++;
         if (level < 10) {
@@ -136,7 +136,7 @@ public class logic {
         } else {
             fallDelay -= 10;
         }
-        requiredLineClears = level * 10;
+        requiredLineClears = (level + 1) * 10;
     }
     public boolean checkIfGameOver() {
         for (int i = 0; i < 4; i++) {
