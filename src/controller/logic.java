@@ -27,6 +27,8 @@ public class logic {
 
     private final ArrayList<int[]> setBlocks;
 
+	private BufferedReader bufferedReader;
+
     public logic() {
         initBlockQueue();
         setBlocks = new ArrayList<>();
@@ -418,6 +420,8 @@ public class logic {
         }
         return highScore;
     }
+
+
     public void writeHighScoreToFile(int highScore) {
         try {
             File highScoreFile = new File("design/highscore.txt");
@@ -521,5 +525,6 @@ public class logic {
     public void clearSetBlocks() {
         setBlocks.clear();
     }
+
 }
 

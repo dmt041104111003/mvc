@@ -2,19 +2,10 @@ package view;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.EventQueue;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontFormatException;
 import java.awt.Image;
-
-import javax.imageio.ImageIO;
-import javax.swing.BoxLayout;
-import javax.swing.ImageIcon;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.border.LineBorder;
-
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -27,7 +18,21 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.concurrent.ThreadLocalRandom;
 
+import javax.imageio.ImageIO;
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.SwingConstants;
+import javax.swing.border.Border;
+import javax.swing.border.LineBorder;
+
 import controller.logic;
+
 
     public class frame {
 
@@ -49,9 +54,11 @@ import controller.logic;
         private JLabel holdImgLabel;
         private JLabel gameOverScoreLabel;
         private JLabel highScoreLabel;
+        private JLabel highLabel;
         private JLabel[] queuePicLabels;
 
         private Font pixelFont;
+		private Component imageLabel;
 
         private ImageIcon iBlockIcon;
         private ImageIcon jBlockIcon;
@@ -60,6 +67,11 @@ import controller.logic;
         private ImageIcon sBlockIcon;
         private ImageIcon tBlockIcon;
         private ImageIcon zBlockIcon;
+
+        private boolean isHighScoreVisible = false;
+        private JLabel howToPlayTextLabel;
+		private boolean isTextDisplayed = false;
+        private Component spaceLabel;
 
         private Thread titleLabelThread;
         private Thread blockGravityThread;
@@ -70,9 +82,14 @@ import controller.logic;
 
         private final logic game;
 
+		private JLabel high_score;
+
+		private JLabel howtoplaygame;
+		private int highestScore;
         public frame(logic newGame) {
             game = newGame;
-
+            
+            highestScore = game.getHighScoreFromFile();
             frame_tetris();
             initFont();
             initStartPanel();
@@ -95,7 +112,7 @@ import controller.logic;
         private void frame_tetris() {
             jframe = new JFrame("Game Tetris");
             jframe.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            jframe.setLayout(null);
+            jframe.getContentPane().setLayout(null);
             jframe.setResizable(false);
             jframe.setSize(418, 561);
             jframe.addKeyListener(keyListener);
@@ -125,14 +142,14 @@ import controller.logic;
                 ImageIcon scaledBackgroundImage = new ImageIcon(scaledImage);
                 backgroundLabel = new JLabel(scaledBackgroundImage);
                 backgroundLabel.setBounds(0, 0, frameWidth, frameHeight);
-                jframe.add(backgroundLabel);
+                jframe.getContentPane().add(backgroundLabel);
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
         private void initStartPanel() {
             startPanel = new JPanel();
-            startPanel.setBounds(10, 110, 382, 200);
+            startPanel.setBounds(10, 110, 382, 370);
             startPanel.setOpaque(false);
             startPanel.setLayout(new BoxLayout(startPanel, BoxLayout.Y_AXIS));
 
@@ -140,7 +157,7 @@ import controller.logic;
             titleLabel.setFont(pixelFont);
             titleLabel.setForeground(Color.BLACK);
             titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-            titleLabel.setFont(pixelFont.deriveFont(70f));
+            titleLabel.setFont(pixelFont.deriveFont(55f));
             startPanel.add(titleLabel);
             animateTitleLabel();
 
@@ -148,17 +165,40 @@ import controller.logic;
             startGameLabel.setFont(pixelFont);
             startGameLabel.setForeground(Color.BLACK);
             startGameLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-            startGameLabel.setFont(pixelFont.deriveFont(40f));
+            startGameLabel.setFont(pixelFont.deriveFont(25f));
             startPanel.add(startGameLabel);
+            
+            high_score = new JLabel("High score");
+            high_score.setFont(pixelFont);
+            high_score.setForeground(Color.BLACK);
+            high_score.setAlignmentX(Component.CENTER_ALIGNMENT);
+            high_score.setFont(pixelFont.deriveFont(25f));
+            startPanel.add(high_score);
+            
+            
+            
+            howtoplaygame = new JLabel("How to play");
+            howtoplaygame.setFont(pixelFont);
+            howtoplaygame.setForeground(Color.BLACK);
+            howtoplaygame.setAlignmentX(Component.CENTER_ALIGNMENT);
+            howtoplaygame.setFont(pixelFont.deriveFont(25f));
+            startPanel.add(howtoplaygame);
 
             JLabel switchThemeLabel = new JLabel("Switch Theme");
             switchThemeLabel.setFont(pixelFont);
             switchThemeLabel.setForeground(Color.BLACK);
             switchThemeLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-            switchThemeLabel.setFont(pixelFont.deriveFont(40f));
+            switchThemeLabel.setFont(pixelFont.deriveFont(25f));
             startPanel.add(switchThemeLabel);
 
-            jframe.add(startPanel);
+            JLabel exit = new JLabel("Exit");
+            exit.setFont(pixelFont);
+            exit.setForeground(Color.BLACK);
+            exit.setAlignmentX(Component.CENTER_ALIGNMENT);
+            exit.setFont(pixelFont.deriveFont(25f));
+            startPanel.add(exit);
+            
+            jframe.getContentPane().add(startPanel);
 
             startGameLabel.addMouseListener(new MouseAdapter() {
                 @Override
@@ -200,14 +240,127 @@ import controller.logic;
                     switchThemeLabel.setForeground(Color.BLACK);
                 }
             });
+            exit.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    System.exit(0);
+                }
+
+                @Override
+                public void mouseEntered(MouseEvent e) {
+                	exit.setForeground(Color.WHITE);
+                }
+
+                @Override
+                public void mouseExited(MouseEvent e) {
+                	exit.setForeground(Color.BLACK);
+                }
+            });
+            
+            howtoplaygame.addMouseListener(new MouseAdapter() {
+
+
+				@Override
+                public void mouseClicked(MouseEvent e) {
+					 if (isHighScoreVisible) {
+				            startPanel.remove(highLabel);
+				            isHighScoreVisible = false;
+				            startPanel.revalidate();
+				            startPanel.repaint();
+	                         startPanel.remove(spaceLabel);
+
+				        }
+					if (isTextDisplayed) {
+					    startPanel.remove(imageLabel);
+                        startPanel.remove(spaceLabel);
+
+					    isTextDisplayed = false;
+					} else {
+
+					    ImageIcon originalIcon = new ImageIcon("design/SBlock.png");
+
+					    Image originalImage = originalIcon.getImage();
+
+					    Image scaledImage = originalImage.getScaledInstance(100, 100, Image.SCALE_SMOOTH);
+
+					    ImageIcon scaledIcon = new ImageIcon(scaledImage);
+
+					    imageLabel = new JLabel(scaledIcon);
+					    
+					    startPanel.add(imageLabel);
+
+					    isTextDisplayed = true;
+					}
+					startPanel.revalidate();
+					startPanel.repaint();
+
+                }
+
+                @Override
+                public void mouseEntered(MouseEvent e) {
+                    howtoplaygame.setForeground(Color.WHITE);
+                }
+
+                @Override
+                public void mouseExited(MouseEvent e) {
+                    howtoplaygame.setForeground(Color.BLACK);
+                }
+            });
+            high_score.addMouseListener(new MouseAdapter() {
+
+				@Override
+                public void mouseClicked(MouseEvent e) {
+                	 if (isTextDisplayed) {
+                         startPanel.remove(imageLabel);
+                         isTextDisplayed = false;
+                         startPanel.revalidate();
+                         startPanel.repaint();
+                         startPanel.remove(spaceLabel);
+
+                     }
+                	 if (isHighScoreVisible) {
+                         startPanel.remove(highLabel);
+                         startPanel.remove(spaceLabel);
+
+                         isHighScoreVisible = false;
+                     } else {
+                         highLabel = new JLabel("High Score: " + highestScore);
+                         highLabel.setFont(pixelFont);
+                         highLabel.setForeground(Color.BLACK);
+                         highLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+                         highLabel.setFont(pixelFont.deriveFont(25f));
+                         Border border = BorderFactory.createLineBorder(Color.BLACK, 2);
+                         highLabel.setBorder(border);
+                         spaceLabel = Box.createVerticalStrut(60);
+                         
+                         startPanel.add(spaceLabel);
+                         startPanel.add(highLabel);
+                         isHighScoreVisible = true;
+                     }
+                     startPanel.revalidate();
+                     startPanel.repaint();
+                }
+
+                @Override
+                public void mouseEntered(MouseEvent e) {
+                	high_score.setForeground(Color.WHITE);
+                }
+
+                @Override
+                public void mouseExited(MouseEvent e) {
+                	high_score.setForeground(Color.BLACK);
+                }
+            });
         }
+        
+
         private void initGamePanel() {
             gamePanel = new JPanel();
             gamePanel.setBounds(0, 0, 402, 522);
             gamePanel.setOpaque(false);
             gamePanel.setVisible(false);
             gamePanel.setLayout(null);
-            jframe.add(gamePanel);
+            jframe.getContentPane().add(gamePanel);
         }
         private void initGridPanel() {
             gridPanel = new JPanel();
@@ -384,6 +537,13 @@ import controller.logic;
             playAgainLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
             gameOverPanel.add(playAgainLabel);
 
+            JLabel exit = new JLabel("Exit");
+            exit.setFont(pixelFont);
+            exit.setForeground(Color.BLACK);
+            exit.setAlignmentX(Component.CENTER_ALIGNMENT);
+            exit.setFont(pixelFont.deriveFont(25f));
+            gameOverPanel.add(exit);
+            
             playAgainLabel.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
@@ -399,11 +559,27 @@ import controller.logic;
                 public void mouseExited(MouseEvent e) {
                     playAgainLabel.setForeground(Color.BLACK);
                 }
+                
             });
 
-            
+            exit.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    System.exit(0);
+                }
+
+                @Override
+                public void mouseEntered(MouseEvent e) {
+                	exit.setForeground(Color.WHITE);
+                }
+
+                @Override
+                public void mouseExited(MouseEvent e) {
+                	exit.setForeground(Color.BLACK);
+                }
+            });
             gameOverPanel.setVisible(false);
-            jframe.add(gameOverPanel);
+            jframe.getContentPane().add(gameOverPanel);
         }
         private void updateQueue() {
             Thread queueThread = new Thread(() -> {
@@ -505,15 +681,15 @@ import controller.logic;
         private final KeyListener keyListener = new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
-                if (e.getKeyCode() == 37 || e.getKeyCode() == 65) {
+                if (e.getKeyCode() == 37 ) {
                     game.moveSide(0);
                     updateCurrentBlock(false);
-                } else if (e.getKeyCode() == 39 || e.getKeyCode() == 68) {
+                } else if (e.getKeyCode() == 39 ) {
                     game.moveSide(1);
                     updateCurrentBlock(false);
-                } else if (e.getKeyCode() == 40 || e.getKeyCode() == 83) {
+                } else if (e.getKeyCode() == 40) {
                     game.setFastFall(true);
-                } else if (e.getKeyCode() == 38 || e.getKeyCode() == 87) {
+                } else if (e.getKeyCode() == 38) {
                     game.rotateBlock();
                     updateCurrentBlock(false);
                 } else if (e.getKeyCode() == 72) {
@@ -594,7 +770,7 @@ import controller.logic;
         private void showGameOverMessage() {
             gamePanel.setVisible(false);
             gameOverScoreLabel.setText("Score: " + game.getScore());
-            highScoreLabel.setText("High Score: " + game.getHighScoreFromFile());
+            highScoreLabel.setText("High Score: " + highestScore);
             gameOverPanel.setVisible(true);
         }
         public void gameOverAnimation() {
@@ -720,5 +896,4 @@ import controller.logic;
             updateLevelLabel();
             gravity();
         }
-
     }
