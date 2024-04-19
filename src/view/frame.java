@@ -87,6 +87,7 @@ import controller.logic;
 		private JLabel howtoplaygame;
 		private int highestScore;
 		private boolean isSoundPlaying = false;
+		private boolean musicBlockSoundPlaying = false;
 	    private Clip clip;
 
 		private JLabel music;
@@ -848,7 +849,33 @@ import controller.logic;
                 }
             }
         }
+//        public class SoundManager {
+//            public static void playSound(String filePath) {
+//                try {
+//                    File soundFile = new File(filePath);
+//                    AudioInputStream audioIn = AudioSystem.getAudioInputStream(soundFile);
+//                    Clip clip = AudioSystem.getClip();
+//                    clip.open(audioIn);
+//                    clip.start();
+//                } catch (Exception e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//        }
+        private void SoundManager(String filePath) {
+            try {
+                File soundFile = new File(filePath);
+                AudioInputStream audioIn = AudioSystem.getAudioInputStream(soundFile);
+                Clip clip = AudioSystem.getClip();
+                clip.open(audioIn);
+                clip.start();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
         private void removeRows(ArrayList<Integer> rowsToRemove) {
+        	int removedRowCount = 0;
             for (Integer i : rowsToRemove) {
                 int green = 250;
                 int blue = 185;
@@ -865,11 +892,27 @@ import controller.logic;
                 for (int j = 0; j < 10; j++) {
                     for (int k = 0; k < game.getSetBlocks().size(); k++) {
                         if (Arrays.equals(new int[]{j, i}, game.getSetBlocks().get(k))) {
+                        	if (!musicBlockSoundPlaying) { // Kiểm tra nếu âm thanh chưa được phát
+                                SoundManager("design/music-block.wav");
+                                musicBlockSoundPlaying = true; // Đặt biến này thành true để chỉ ra rằng âm thanh đã được phát
+                            }
                             game.removeFromSetBlocks(k);
                         }
                         gameGrid[j][i].setBackground(Color.WHITE);
                         gameGrid[j][i].setBorder(null);
                         gameGrid[j][i].setOpaque(false);
+                    }
+                }
+                // Tăng biến đếm sau mỗi lần xoá dòng
+                removedRowCount++;
+                // Kiểm tra nếu đã xoá ít nhất 3 dòng thì phát âm thanh mới
+                if (removedRowCount >= 2) {
+                    SoundManager("design/3Lines.wav");
+                    // Đặt lại biến đếm về 0 để đếm lại từ đầu
+                    removedRowCount = 0;
+                    if (musicBlockSoundPlaying) {
+                        musicBlockSoundPlaying = false;
+                        // Thêm đoạn code để tắt âm thanh "music-block.wav" ở đây
                     }
                 }
             }
