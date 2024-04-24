@@ -29,6 +29,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
 import javax.swing.border.LineBorder;
 
@@ -38,6 +39,7 @@ import view.ImageManager;
 import view.RowManager;
 import view.ScoreManager;
 import view.SoundManager;
+
     public class frame {
 
         private JFrame jframe;
@@ -76,13 +78,14 @@ import view.SoundManager;
         private JLabel scoreLabel_2;
         private JPanel scorePanel_3;
         private JLabel scoreLabel_3;
+//        private boolean isSoundPlaying = true;
         
         private boolean isHighScoreVisible = false;
 		private boolean isTextDisplayed = false;
 
         private Thread titleLabelThread;
         private Thread blockGravityThread;
-
+//        private BlockQueueUpdater queueUpdater;
 //        private int currentBackground = 0;
 
         private boolean animateTitle = true;
@@ -96,11 +99,12 @@ import view.SoundManager;
 		private boolean isSoundPlaying = false;
 //		private int test;
 //	    private Clip clip;
-
+//		private QueuePanel queuePanel;
 		private JLabel music;
         public frame(logic newGame) {
             game = newGame;
 //            playSound("design/music-full.wav");
+            SoundManager.toggleSound();
             highestScore = game.getHighScoreFromFile();
             frame_tetris();
             initFont();
@@ -116,6 +120,9 @@ import view.SoundManager;
             ImageManager.initImageIcons();
             initQueuePanel();
             initHoldPanel();
+//            queueUpdater = new BlockQueueUpdater(this, game);
+//            queueUpdater.start();
+            ImageManager.initImageIcons();
 
             initFrameBackground();
 
@@ -196,7 +203,7 @@ import view.SoundManager;
             howtoplaygame.setFont(pixelFont.deriveFont(25f));
             startPanel.add(howtoplaygame);
 
-            music = new JLabel("Music on");
+            music = new JLabel(isSoundPlaying ? "Music on" : "Music off");
             music.setFont(pixelFont);
             music.setForeground(new Color(173, 216, 230));
             music.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -250,12 +257,9 @@ import view.SoundManager;
             music.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
-                      if (isSoundPlaying) {
-                          music.setText("Music on");
-                      } else {
-                          music.setText("Music off");
-                      }
-                      SoundManager.toggleSound();
+                    isSoundPlaying = !isSoundPlaying;
+                    music.setText(isSoundPlaying ? "Music on" : "Music off");
+                    SoundManager.toggleSound();
                 }
 
                 @Override
@@ -450,11 +454,13 @@ import view.SoundManager;
             queuePanel.setLayout(null);
             queuePanel.setOpaque(false);
             gamePanel.add(queuePanel);
-            queuePicLabels  = new JLabel[3];
-            queuePicLabels[0] = new JLabel();
-            queuePicLabels[1] = new JLabel();
-            queuePicLabels[2] = new JLabel();
-            updateQueue();
+            queuePicLabels = new JLabel[3]; // Tạo mảng 3 JLabel
+            for (int i = 0; i < 3; i++) {
+                queuePicLabels[i] = new JLabel();
+                queuePicLabels[i].setBounds(10, 22 + (i * 60), 100, 25); // Đặt vị trí và kích thước cho mỗi JLabel
+                queuePanel.add(queuePicLabels[i]);
+            }
+//            updateQueue();
         }
         private void initHoldPanel() {
             JLabel holdLabel = new JLabel("Hold Block (H)");
@@ -476,7 +482,7 @@ import view.SoundManager;
             scorePanel_2.setBounds(272, 418, 120, 25);
             gamePanel.add(scorePanel_2);
             
-            scoreLabel_2 = new JLabel("Music on");
+            scoreLabel_2 = new JLabel(isSoundPlaying ? "Music on" : "Music off");
             scoreLabel_2.setForeground(new Color(173, 216, 230));
             scoreLabel_2.setFont(pixelFont.deriveFont(15f));
             scorePanel_2.add(scoreLabel_2);
@@ -490,13 +496,9 @@ import view.SoundManager;
             scoreLabel_2.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
-                	
-                      if (isSoundPlaying) {
-                    	  scoreLabel_2.setText("Music on");
-                      } else {
-                    	  scoreLabel_2.setText("Music off");
-                      }
-                      SoundManager.toggleSound();
+                    isSoundPlaying = !isSoundPlaying;
+                    scoreLabel_2.setText(isSoundPlaying ? "Music on" : "Music off");
+                    SoundManager.toggleSound();
                 }
 
                 @Override
@@ -666,49 +668,19 @@ import view.SoundManager;
             gameOverPanel.setVisible(false);
             jframe.getContentPane().add(gameOverPanel);
         }
-        private void updateQueue() {
-            Thread queueThread = new Thread(() -> {
+        public void updateQueue() {
+            SwingUtilities.invokeLater(() -> {
                 for (int i = 0; i < 3; i++) {
-                    switch (game.getBlockQueue()[i]) {
-                        case 0 -> {
-                            queuePicLabels[i].setIcon(iBlockIcon);
-                            queuePicLabels[i].setBounds(10, 22 + (i * 60), 100, 25);
-                            queuePanel.add(queuePicLabels[i]);
-                        }
-                        case 1 -> {
-                            queuePicLabels[i].setIcon(jBlockIcon);
-                            queuePicLabels[i].setBounds(22, 10 + (i * 60), 75, 50);
-                            queuePanel.add(queuePicLabels[i]);
-                        }
-                        case 2 -> {
-                            queuePicLabels[i].setIcon(lBlockIcon);
-                            queuePicLabels[i].setBounds(22, 10 + (i * 60), 75, 50);
-                            queuePanel.add(queuePicLabels[i]);
-                        }
-                        case 3 -> {
-                            queuePicLabels[i].setIcon(oBlockIcon);
-                            queuePicLabels[i].setBounds(35, 10 + (i * 60), 50, 50);
-                            queuePanel.add(queuePicLabels[i]);
-                        }
-                        case 4 -> {
-                            queuePicLabels[i].setIcon(sBlockIcon);
-                            queuePicLabels[i].setBounds(22, 10 + (i * 60), 75, 50);
-                            queuePanel.add(queuePicLabels[i]);
-                        }
-                        case 5 -> {
-                            queuePicLabels[i].setIcon(tBlockIcon);
-                            queuePicLabels[i].setBounds(22, 10 + (i * 60), 75, 50);
-                            queuePanel.add(queuePicLabels[i]);
-                        }
-                        case 6 -> {
-                            queuePicLabels[i].setIcon(zBlockIcon);
-                            queuePicLabels[i].setBounds(22, 10 + (i * 60), 75, 50);
-                            queuePanel.add(queuePicLabels[i]);
-                        }
+                    int blockType = game.getBlockQueue()[i];
+                    ImageIcon icon = ImageManager.getBlockIcon(blockType);
+                    switch (blockType) {
+                        case 0 -> queuePicLabels[i].setBounds(10, 22 + (i * 60), 100, 25);
+                        case 1, 2, 4, 5, 6 -> queuePicLabels[i].setBounds(22, 10 + (i * 60), 75, 50);
+                        case 3 -> queuePicLabels[i].setBounds(35, 10 + (i * 60), 50, 50);
                     }
+                    queuePicLabels[i].setIcon(icon);
                 }
             });
-            queueThread.start();
         }
       
 
