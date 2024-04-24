@@ -34,12 +34,16 @@ import javax.swing.border.LineBorder;
 
 import controller.logic;
 
+import view.ImageManager;
+import view.RowManager;
+import view.ScoreManager;
+import view.SoundManager;
     public class frame {
 
         private JFrame jframe;
 
         private JPanel startPanel;
-        private JPanel gamePanel;
+         JPanel gamePanel;
         private JPanel gridPanel;
         private JPanel queuePanel;
         private JPanel gameOverPanel;
@@ -48,7 +52,7 @@ import controller.logic;
 
         private JLabel titleLabel;
         private JLabel backgroundLabel;
-        private JLabel scoreLabel;
+        JLabel scoreLabel;
         private JLabel levelLabel;
         private JLabel linesLabel;
         private JLabel holdImgLabel;
@@ -57,7 +61,7 @@ import controller.logic;
         private JLabel highLabel;
         private JLabel[] queuePicLabels;
 
-        private Font pixelFont;
+        public Font pixelFont;
 		private JLabel imageLabel;
 
         private ImageIcon iBlockIcon;
@@ -79,7 +83,7 @@ import controller.logic;
         private Thread titleLabelThread;
         private Thread blockGravityThread;
 
-        private int currentBackground = 0;
+//        private int currentBackground = 0;
 
         private boolean animateTitle = true;
 
@@ -90,7 +94,8 @@ import controller.logic;
 		private JLabel howtoplaygame;
 		private int highestScore;
 		private boolean isSoundPlaying = false;
-	    private Clip clip;
+//		private int test;
+//	    private Clip clip;
 
 		private JLabel music;
         public frame(logic newGame) {
@@ -105,10 +110,10 @@ import controller.logic;
             initPausePanel();
             initGridPanel();
             initGameGrid();
-            initScorePanel();
+            ScoreManager.initScorePanel(this);
             initLevelPanel();
             initLinesPanel();
-            initImageIcons();
+            ImageManager.initImageIcons();
             initQueuePanel();
             initHoldPanel();
 
@@ -135,7 +140,7 @@ import controller.logic;
         }
         private void initFrameBackground() {
             try {
-            	ImageIcon backgroundImage = new ImageIcon(ImageIO.read(new File("design/background.png")));
+            	ImageIcon backgroundImage = new ImageIcon(ImageIO.read(new File("design/background-1.jpg")));
             	int frameWidth = jframe.getWidth();
                 int frameHeight = jframe.getHeight();
                 int imageWidth = backgroundImage.getIconWidth();
@@ -155,7 +160,6 @@ import controller.logic;
             }
         }
 
-       
         
         private void initStartPanel() {
             startPanel = new JPanel();
@@ -165,7 +169,7 @@ import controller.logic;
 
             titleLabel = new JLabel("Tetris");
             titleLabel.setFont(pixelFont);
-            titleLabel.setForeground(Color.BLACK);
+            titleLabel.setForeground(new Color(173, 216, 230));
             titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
             titleLabel.setFont(pixelFont.deriveFont(55f));
             startPanel.add(titleLabel);
@@ -173,42 +177,42 @@ import controller.logic;
 
             JLabel startGameLabel = new JLabel("Start");
             startGameLabel.setFont(pixelFont);
-            startGameLabel.setForeground(Color.BLACK);
+            startGameLabel.setForeground(new Color(173, 216, 230));
             startGameLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
             startGameLabel.setFont(pixelFont.deriveFont(25f));
             startPanel.add(startGameLabel);
             
             high_score = new JLabel("High score");
             high_score.setFont(pixelFont);
-            high_score.setForeground(Color.BLACK);
+            high_score.setForeground(new Color(173, 216, 230));
             high_score.setAlignmentX(Component.CENTER_ALIGNMENT);
             high_score.setFont(pixelFont.deriveFont(25f));
             startPanel.add(high_score);
             
             howtoplaygame = new JLabel("How to play");
             howtoplaygame.setFont(pixelFont);
-            howtoplaygame.setForeground(Color.BLACK);
+            howtoplaygame.setForeground(new Color(173, 216, 230));
             howtoplaygame.setAlignmentX(Component.CENTER_ALIGNMENT);
             howtoplaygame.setFont(pixelFont.deriveFont(25f));
             startPanel.add(howtoplaygame);
 
             music = new JLabel("Music on");
             music.setFont(pixelFont);
-            music.setForeground(Color.BLACK);
+            music.setForeground(new Color(173, 216, 230));
             music.setAlignmentX(Component.CENTER_ALIGNMENT);
             music.setFont(pixelFont.deriveFont(25f));
             startPanel.add(music);
             
             JLabel switchThemeLabel = new JLabel("Switch Theme");
             switchThemeLabel.setFont(pixelFont);
-            switchThemeLabel.setForeground(Color.BLACK);
+            switchThemeLabel.setForeground(new Color(173, 216, 230));
             switchThemeLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
             switchThemeLabel.setFont(pixelFont.deriveFont(25f));
             startPanel.add(switchThemeLabel);
 
             JLabel exit = new JLabel("Exit");
             exit.setFont(pixelFont);
-            exit.setForeground(Color.BLACK);
+            exit.setForeground(new Color(173, 216, 230));
             exit.setAlignmentX(Component.CENTER_ALIGNMENT);
             exit.setFont(pixelFont.deriveFont(25f));
             startPanel.add(exit);
@@ -240,19 +244,18 @@ import controller.logic;
 
                 @Override
                 public void mouseExited(MouseEvent e) {
-                    startGameLabel.setForeground(Color.BLACK);
+                    startGameLabel.setForeground(new Color(173, 216, 230));
                 }
             });
             music.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
-                	
                       if (isSoundPlaying) {
                           music.setText("Music on");
                       } else {
                           music.setText("Music off");
                       }
-                	toggleSound();
+                      SoundManager.toggleSound();
                 }
 
                 @Override
@@ -262,13 +265,13 @@ import controller.logic;
 
                 @Override
                 public void mouseExited(MouseEvent e) {
-                	music.setForeground(Color.BLACK);
+                	music.setForeground(new Color(173, 216, 230));
                 }
             });
             switchThemeLabel.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
-                    changeBackgroundImage();
+//                    changeBackgroundImage();
                 }
 
                 @Override
@@ -278,7 +281,7 @@ import controller.logic;
 
                 @Override
                 public void mouseExited(MouseEvent e) {
-                    switchThemeLabel.setForeground(Color.BLACK);
+                    switchThemeLabel.setForeground(new Color(173, 216, 230));
                 }
             });
             exit.addMouseListener(new MouseAdapter() {
@@ -294,7 +297,7 @@ import controller.logic;
 
                 @Override
                 public void mouseExited(MouseEvent e) {
-                	exit.setForeground(Color.BLACK);
+                	exit.setForeground(new Color(173, 216, 230));
                 }
             });
             
@@ -339,7 +342,7 @@ import controller.logic;
 
                 @Override
                 public void mouseExited(MouseEvent e) {
-                    howtoplaygame.setForeground(Color.BLACK);
+                    howtoplaygame.setForeground(new Color(173, 216, 230));
                 }
             });
             high_score.addMouseListener(new MouseAdapter() {
@@ -359,10 +362,10 @@ import controller.logic;
                      } else {
                          highLabel = new JLabel("High Score: " + highestScore);
                          highLabel.setFont(pixelFont);
-                         highLabel.setForeground(Color.BLACK);
+                         highLabel.setForeground(new Color(173, 216, 230));
                          highLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
                          highLabel.setFont(pixelFont.deriveFont(25f));
-                         Border border = BorderFactory.createLineBorder(Color.BLACK, 2);
+                         Border border = BorderFactory.createLineBorder(new Color(173, 216, 230), 2);
                          highLabel.setBorder(border);
                          startPanel.add(highLabel);
                          isHighScoreVisible = true;
@@ -378,43 +381,12 @@ import controller.logic;
 
                 @Override
                 public void mouseExited(MouseEvent e) {
-                	high_score.setForeground(Color.BLACK);
+                	high_score.setForeground(new Color(173, 216, 230));
                 }
             });
         }
-
-        private void playSound(String filePath) {
-            try {
-                File audioFile = new File(filePath);
-                AudioInputStream audioStream = AudioSystem.getAudioInputStream(audioFile);
-                if (isSoundPlaying) {
-                    stopSound();
-                } else {
-                    clip = AudioSystem.getClip();
-                    clip.open(audioStream);
-                    clip.loop(Clip.LOOP_CONTINUOUSLY);
-                    clip.start();
-                    isSoundPlaying = true;
-                }
-            } catch (UnsupportedAudioFileException | LineUnavailableException | IOException e) {
-                e.printStackTrace();
-            }
-        }
-        private void stopSound() {
-            if (clip != null && clip.isRunning()) {
-                clip.stop();
-            }                isSoundPlaying = false;
-
-        }
-
-        private void toggleSound() {
-            if (isSoundPlaying) {
-                stopSound();
-            } else {
-                playSound("design/music-full.wav");
-            }
-        }
-
+       
+        
         private void initGamePanel() {
             gamePanel = new JPanel();
             gamePanel.setBounds(0, 0, 402, 522);
@@ -426,7 +398,7 @@ import controller.logic;
         private void initGridPanel() {
             gridPanel = new JPanel();
             gridPanel.setBounds(10, 10, 252, 502);
-            gridPanel.setBorder(new LineBorder(Color.BLACK, 2));
+            gridPanel.setBorder(new LineBorder(new Color(173, 216, 230), 2));
             gridPanel.setOpaque(false);
             gridPanel.setLayout(null);
             gamePanel.add(gridPanel);
@@ -447,24 +419,14 @@ import controller.logic;
                 y += 25;
             }
         }
-        private void initScorePanel() {
-            JPanel scorePanel = new JPanel();
-            scorePanel.setBounds(272, 10, 120, 35);
-            scorePanel.setOpaque(false);
-            scorePanel.setBorder(new LineBorder(Color.BLACK, 2));
-            scoreLabel = new JLabel("Score: 0");
-            scoreLabel.setFont(pixelFont.deriveFont(14f));
-            scoreLabel.setForeground(Color.BLACK);
-            scorePanel.add(scoreLabel);
-            gamePanel.add(scorePanel);
-        }
+
         private void initLevelPanel() {
             JPanel levelPanel = new JPanel();
             levelPanel.setBounds(272, 49, 120, 35);
             levelPanel.setOpaque(false);
-            levelPanel.setBorder(new LineBorder(Color.BLACK, 2));
+            levelPanel.setBorder(new LineBorder(new Color(173, 216, 230), 2));
             levelLabel = new JLabel("Level: 0");
-            levelLabel.setForeground(Color.BLACK);
+            levelLabel.setForeground(new Color(173, 216, 230));
             levelLabel.setFont(pixelFont.deriveFont(14f));
             levelPanel.add(levelLabel);
             gamePanel.add(levelPanel);
@@ -473,30 +435,18 @@ import controller.logic;
             JPanel linesPanel = new JPanel();
             linesPanel.setBounds(272, 86, 120, 30);
             linesPanel.setOpaque(false);
-            linesPanel.setBorder(new LineBorder(Color.BLACK, 2));
+            linesPanel.setBorder(new LineBorder(new Color(173, 216, 230), 2));
             linesLabel = new JLabel("Lines: 0");
             linesLabel.setFont(pixelFont.deriveFont(14f));
-            linesLabel.setForeground(Color.BLACK);
+            linesLabel.setForeground(new Color(173, 216, 230));
             linesPanel.add(linesLabel);
             gamePanel.add(linesPanel);
         }
-        private void initImageIcons() {
-            try {
-                iBlockIcon = new ImageIcon(ImageIO.read(new File("design/IBlock.png")));
-                jBlockIcon = new ImageIcon(ImageIO.read(new File("design/JBlock.png")));
-                lBlockIcon = new ImageIcon(ImageIO.read(new File("design/LBlock.png")));
-                oBlockIcon = new ImageIcon(ImageIO.read(new File("design/OBlock.png")));
-                sBlockIcon = new ImageIcon(ImageIO.read(new File("design/SBlock.png")));
-                tBlockIcon = new ImageIcon(ImageIO.read(new File("design/TBlock.png")));
-                zBlockIcon = new ImageIcon(ImageIO.read(new File("design/ZBlock.png")));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
+
         private void initQueuePanel() {
             queuePanel = new JPanel();
             queuePanel.setBounds(272, 118, 120, 189);
-            queuePanel.setBorder(new LineBorder(Color.BLACK, 2));
+            queuePanel.setBorder(new LineBorder(new Color(173, 216, 230), 2));
             queuePanel.setLayout(null);
             queuePanel.setOpaque(false);
             gamePanel.add(queuePanel);
@@ -508,13 +458,13 @@ import controller.logic;
         }
         private void initHoldPanel() {
             JLabel holdLabel = new JLabel("Hold Block (H)");
-            holdLabel.setForeground(Color.BLACK);
+            holdLabel.setForeground(new Color(173, 216, 230));
             holdLabel.setFont(pixelFont.deriveFont(15f));
             JPanel holdPanel = new JPanel();
             holdPanel.setBounds(272, 317, 120, 91);
             holdPanel.setBackground(null);
             holdPanel.setOpaque(false);
-            holdPanel.setBorder(new LineBorder(Color.BLACK, 2));
+            holdPanel.setBorder(new LineBorder(new Color(173, 216, 230), 2));
             holdPanel.add(holdLabel);
             holdImgLabel = new JLabel();
             holdPanel.add(holdImgLabel);
@@ -522,12 +472,12 @@ import controller.logic;
             
             scorePanel_2 = new JPanel();
             scorePanel_2.setOpaque(false);
-            scorePanel_2.setBorder(new LineBorder(Color.BLACK, 2));
+            scorePanel_2.setBorder(new LineBorder(new Color(173, 216, 230), 2));
             scorePanel_2.setBounds(272, 418, 120, 25);
             gamePanel.add(scorePanel_2);
             
             scoreLabel_2 = new JLabel("Music on");
-            scoreLabel_2.setForeground(Color.BLACK);
+            scoreLabel_2.setForeground(new Color(173, 216, 230));
             scoreLabel_2.setFont(pixelFont.deriveFont(15f));
             scorePanel_2.add(scoreLabel_2);
             scorePanel_2.setLayout(new BoxLayout(scorePanel_2, BoxLayout.Y_AXIS));
@@ -546,7 +496,7 @@ import controller.logic;
                       } else {
                     	  scoreLabel_2.setText("Music off");
                       }
-                	toggleSound();
+                      SoundManager.toggleSound();
                 }
 
                 @Override
@@ -556,17 +506,17 @@ import controller.logic;
 
                 @Override
                 public void mouseExited(MouseEvent e) {
-                	scoreLabel_2.setForeground(Color.BLACK);
+                	scoreLabel_2.setForeground(new Color(173, 216, 230));
                 }
             });
             scorePanel_3 = new JPanel();
             scorePanel_3.setOpaque(false);
-            scorePanel_3.setBorder(new LineBorder(Color.BLACK, 2));
+            scorePanel_3.setBorder(new LineBorder(new Color(173, 216, 230), 2));
             scorePanel_3.setBounds(272, 485, 120, 27);
             gamePanel.add(scorePanel_3);
             
             scoreLabel_3 = new JLabel("Exit");
-            scoreLabel_3.setForeground(Color.BLACK);
+            scoreLabel_3.setForeground(new Color(173, 216, 230));
             scoreLabel_3.setFont(pixelFont.deriveFont(19f));
             scorePanel_3.add(scoreLabel_3);
             scorePanel_3.setLayout(new BoxLayout(scorePanel_3, BoxLayout.Y_AXIS));
@@ -589,7 +539,7 @@ import controller.logic;
 
                 @Override
                 public void mouseExited(MouseEvent e) {
-                	scoreLabel_3.setForeground(Color.BLACK);
+                	scoreLabel_3.setForeground(new Color(173, 216, 230));
                 }
             });
           
@@ -597,7 +547,7 @@ import controller.logic;
         private void initPausePanel() {
             pauseCoverPanel = new JPanel();
             pauseCoverPanel.setBounds(10, 10, 252, 502);
-            pauseCoverPanel.setBorder(new LineBorder(Color.BLACK, 2));
+            pauseCoverPanel.setBorder(new LineBorder(new Color(173, 216, 230), 2));
             pauseCoverPanel.setBackground(new Color(51, 51, 51, 150));
             pauseCoverPanel.setVisible(false);
             gamePanel.add(pauseCoverPanel);
@@ -608,13 +558,13 @@ import controller.logic;
             pauseCoverPanel.add(pauseCoverLabel);
 
             JPanel pausePanel = new JPanel();
-            pausePanel.setForeground(Color.BLACK);
+            pausePanel.setForeground(new Color(173, 216, 230));
             pausePanel.setBounds(272, 453, 120, 30);
             pausePanel.setOpaque(false);
-            pausePanel.setBorder(new LineBorder(Color.BLACK, 2));
+            pausePanel.setBorder(new LineBorder(new Color(173, 216, 230), 2));
 
             JLabel pauseLabel = new JLabel("Pause (P)");
-            pauseLabel.setForeground(Color.BLACK);
+            pauseLabel.setForeground(new Color(173, 216, 230));
             pauseLabel.setFont(pixelFont.deriveFont(19f));
             pausePanel.add(pauseLabel);
             pausePanel.setLayout(new BoxLayout(pausePanel, BoxLayout.Y_AXIS));
@@ -638,7 +588,7 @@ import controller.logic;
 
                 @Override
                 public void mouseExited(MouseEvent e) {
-                    pauseLabel.setForeground(Color.BLACK);
+                    pauseLabel.setForeground(new Color(173, 216, 230));
                 }
             });
         }
@@ -650,31 +600,31 @@ import controller.logic;
 
             JLabel gameOverLabel = new JLabel("Game Over");
             gameOverLabel.setFont(pixelFont.deriveFont(55f));
-            gameOverLabel.setForeground(Color.BLACK);
+            gameOverLabel.setForeground(new Color(173, 216, 230));
             gameOverLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
             gameOverPanel.add(gameOverLabel);
 
             highScoreLabel = new JLabel("High Score: 0");
             highScoreLabel.setFont(pixelFont.deriveFont(25f));
-            highScoreLabel.setForeground(Color.BLACK);
+            highScoreLabel.setForeground(new Color(173, 216, 230));
             highScoreLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
             gameOverPanel.add(highScoreLabel);
 
             gameOverScoreLabel = new JLabel("Score: 0");
-            gameOverScoreLabel.setForeground(Color.BLACK);
+            gameOverScoreLabel.setForeground(new Color(173, 216, 230));
             gameOverScoreLabel.setFont(pixelFont.deriveFont(25f));
             gameOverScoreLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
             gameOverPanel.add(gameOverScoreLabel);
 
             JLabel playAgainLabel = new JLabel("Play Again?");
-            playAgainLabel.setForeground(Color.BLACK);
+            playAgainLabel.setForeground(new Color(173, 216, 230));
             playAgainLabel.setFont(pixelFont.deriveFont(25f));
             playAgainLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
             gameOverPanel.add(playAgainLabel);
 
             JLabel exit = new JLabel("Exit");
             exit.setFont(pixelFont);
-            exit.setForeground(Color.BLACK);
+            exit.setForeground(new Color(173, 216, 230));
             exit.setAlignmentX(Component.CENTER_ALIGNMENT);
             exit.setFont(pixelFont.deriveFont(25f));
             gameOverPanel.add(exit);
@@ -692,7 +642,7 @@ import controller.logic;
 
                 @Override
                 public void mouseExited(MouseEvent e) {
-                    playAgainLabel.setForeground(Color.BLACK);
+                    playAgainLabel.setForeground(new Color(173, 216, 230));
                 }
                 
             });
@@ -710,7 +660,7 @@ import controller.logic;
 
                 @Override
                 public void mouseExited(MouseEvent e) {
-                	exit.setForeground(Color.BLACK);
+                	exit.setForeground(new Color(173, 216, 230));
                 }
             });
             gameOverPanel.setVisible(false);
@@ -760,58 +710,23 @@ import controller.logic;
             });
             queueThread.start();
         }
-        private void changeBackgroundImage() {
-            try {
-                if (currentBackground == 0) {
-                    backgroundLabel.setIcon(new ImageIcon(ImageIO.read(new File("design/background-2.jpg"))));
-                    currentBackground = 1;
-                } else if (currentBackground == 1) {
-                    backgroundLabel.setIcon(new ImageIcon(ImageIO.read(new File("design/background.png"))));
-                    currentBackground = 0;
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
+      
+
+
         private void updateHoldImage() {
-            if (game.getCurrentHoldBlock() != -1) {
-                ImageIcon icon = switch (game.getCurrentHoldBlock()) {
-                    case 0 -> iBlockIcon;
-                    case 1 -> jBlockIcon;
-                    case 2 -> lBlockIcon;
-                    case 3 -> oBlockIcon;
-                    case 4 -> sBlockIcon;
-                    case 5 -> tBlockIcon;
-                    case 6 -> zBlockIcon;
-                    default -> null;
-                };
-                holdImgLabel.setIcon(icon);
-            } else {
-                holdImgLabel.setIcon(null);
-            }
+        	ImageManager.updateHoldImage(holdImgLabel, game);
         }
         private void updateScoreLabel() {
-            scoreLabel.setText("Score: " + game.getScore());
+            ScoreManager.updateScoreLabel(scoreLabel, game);
         }
         private void updateLevelLabel() {
-            levelLabel.setText("Level: " + game.getLevel());
+            ScoreManager.updateLevelLabel(levelLabel, game);
         }
         private void updateLinesLabel() {
-            linesLabel.setText("Lines: " + game.getTotalLines());
+            ScoreManager.updateLinesLabel(linesLabel, game);
         }
         private void updateCurrentBlock(boolean isNewBlock) {
-            if (!isNewBlock) {
-                for (int i = 0; i < 4; i++) {
-                    gameGrid[game.getPreviousBlockPos()[i][0]][game.getPreviousBlockPos()[i][1]].setBackground(Color.WHITE);
-                    gameGrid[game.getPreviousBlockPos()[i][0]][game.getPreviousBlockPos()[i][1]].setBorder(null);
-                    gameGrid[game.getPreviousBlockPos()[i][0]][game.getPreviousBlockPos()[i][1]].setOpaque(false);
-                }
-            }
-            for (int i = 0; i < 4; i++) {
-                gameGrid[game.getCurrentBlockPos()[i][0]][game.getCurrentBlockPos()[i][1]].setOpaque(true);
-                gameGrid[game.getCurrentBlockPos()[i][0]][game.getCurrentBlockPos()[i][1]].setBackground(game.getCurrentBlockColor());
-                gameGrid[game.getCurrentBlockPos()[i][0]][game.getCurrentBlockPos()[i][1]].setBorder(new LineBorder(Color.BLACK));
-            }
+            ImageManager.updateCurrentBlock(gameGrid, game, isNewBlock);
         }
         private final KeyListener keyListener = new KeyAdapter() {
             @Override
@@ -869,7 +784,6 @@ import controller.logic;
             blockGravityThread = new Thread(() -> {
                 while (game.isRunning()) {
                     if (!game.isTouchingBottomOrBlock()) {
-                        //Copy array
                         game.updatePreviousBlockPos();
                         game.moveBlockDown();
                         updateCurrentBlock(false);
@@ -928,84 +842,11 @@ import controller.logic;
             }
         }
 
-        private void SoundManager(String filePath) {
-            try {
-                File soundFile = new File(filePath);
-                AudioInputStream audioIn = AudioSystem.getAudioInputStream(soundFile);
-                Clip clip = AudioSystem.getClip();
-                clip.open(audioIn);
-                clip.start();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+        public Font getPixelFont() {
+            return pixelFont;
         }
-
         private void removeRows(ArrayList<Integer> rowsToRemove) {
-        	int removedRowCount = 0;
-            for (Integer i : rowsToRemove) {
-                int green = 250;
-                int blue = 185;
-                for (int j = 0; j < 10; j++) {
-                    gameGrid[j][i].setBackground(new Color(250, green, blue));
-                    green -= 10;
-                    blue -= 10;
-                    try {
-                        Thread.sleep(15);
-                    } catch (InterruptedException ignored) {}
-                }
-            }
-            for (Integer i : rowsToRemove) {
-                boolean musicBlockSoundPlaying = false;  
-                for (int j = 0; j < 10; j++) {
-                    for (int k = 0; k < game.getSetBlocks().size(); k++) {
-                        if (Arrays.equals(new int[]{j, i}, game.getSetBlocks().get(k))) {
-                            if (!musicBlockSoundPlaying) {
-                                SoundManager("design/music-block.wav");
-                                musicBlockSoundPlaying = true; 
-                            }
-                            game.removeFromSetBlocks(k);
-                        }
-                        gameGrid[j][i].setBackground(Color.WHITE);
-                        gameGrid[j][i].setBorder(null);
-                        gameGrid[j][i].setOpaque(false);
-                    }
-                }
-                removedRowCount++;
-                if (removedRowCount >= 2) {
-                    SoundManager("design/3Lines.wav");
-                    removedRowCount = 0;
-                }
-            }
-
-            Collections.reverse(rowsToRemove);
-            for (Integer i: rowsToRemove) {
-                Color[][] gridColors = new Color[10][i];
-                for (int j = 0; j < i; j++) {
-                    for (int k = 0; k < 10; k++) {
-                        gridColors[k][j] = gameGrid[k][j].getBackground();
-                        gameGrid[k][j].setBackground(Color.WHITE);
-                        gameGrid[k][j].setBorder(null);
-                        gameGrid[k][j].setOpaque(false);
-                    }
-                }
-                for (int j = 0; j < i; j++) {
-                    for (int k = 0; k < 10; k++) {
-                        if (gridColors[k][j] != Color.WHITE) {
-                            gameGrid[k][j + 1].setBackground(gridColors[k][j]);
-                            gameGrid[k][j + 1].setBorder(new LineBorder(Color.BLACK));
-                            gameGrid[k][j + 1].setOpaque(true);
-                        }
-                    }
-                }
-                game.clearSetBlocks();
-                for (int j = 0; j < 20; j++) {
-                    for (int k = 0; k < 10; k++) {
-                        if (gameGrid[k][j].getBackground() != Color.WHITE) {
-                            game.addToSetBlocks(new int[]{k, j});
-                        }
-                    }
-                }
-            }
+            RowManager.removeRows(gameGrid, game, rowsToRemove);
         }
         private void holdBlock() {
             if (!game.isHeldThisTurn()) {
