@@ -13,37 +13,29 @@ import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 import javax.imageio.ImageIO;
-import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.Clip;
-import javax.sound.sampled.LineUnavailableException;
-import javax.sound.sampled.UnsupportedAudioFileException;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
 import javax.swing.border.LineBorder;
 
 import controller.logic;
 
-import view.ImageManager;
-import view.RowManager;
-import view.ScoreManager;
-import view.SoundManager;
-
     public class frame {
 
         private JFrame jframe;
-
+        private JTextField nameField;
+        private int highest_Score;
         private JPanel startPanel;
          JPanel gamePanel;
         private JPanel gridPanel;
@@ -51,6 +43,9 @@ import view.SoundManager;
         private JPanel gameOverPanel;
         private JPanel pauseCoverPanel;
         private JPanel[][] gameGrid;
+        private JLabel finalScoreLabel;
+        private JPanel winGamePanel;
+        private JLabel finalScoreLabel1;
 
         private JLabel titleLabel;
         private JLabel backgroundLabel;
@@ -73,13 +68,15 @@ import view.SoundManager;
         private ImageIcon sBlockIcon;
         private ImageIcon tBlockIcon;
         private ImageIcon zBlockIcon;
+        private static final int MAX_SCORE = 100;
 
         private JPanel scorePanel_2;
         private JLabel scoreLabel_2;
         private JPanel scorePanel_3;
         private JLabel scoreLabel_3;
 //        private boolean isSoundPlaying = true;
-        
+        private OverLayDialog OverLayDialog_;
+
         private boolean isHighScoreVisible = false;
 		private boolean isTextDisplayed = false;
 
@@ -87,7 +84,9 @@ import view.SoundManager;
         private Thread blockGravityThread;
 //        private BlockQueueUpdater queueUpdater;
 //        private int currentBackground = 0;
-
+        private JPanel overlayPanel;
+        private JLabel overlayImageLabel;
+        private JLabel overlayHighScoreLabel;
         private boolean animateTitle = true;
 
         private final logic game;
@@ -123,7 +122,7 @@ import view.SoundManager;
 //            queueUpdater = new BlockQueueUpdater(this, game);
 //            queueUpdater.start();
             ImageManager.initImageIcons();
-
+            OverLayDialog_ = new OverLayDialog(jframe);
             initFrameBackground();
 
             jframe.setVisible(true);
@@ -229,6 +228,16 @@ import view.SoundManager;
 //            soundStatusLabel.setForeground(Color.BLACK);
 //            soundStatusLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 //            startPanel.add(soundStatusLabel);
+            
+            overlayPanel = new JPanel();
+            overlayPanel.setBounds(10, 77, 392, 445); 
+            overlayPanel.setOpaque(false);
+            overlayPanel.setLayout(new BoxLayout(overlayPanel, BoxLayout.Y_AXIS));
+            overlayPanel.setVisible(false);
+            jframe.getContentPane().add(overlayPanel);
+
+            overlayImageLabel = new JLabel();
+            overlayHighScoreLabel = new JLabel();
             jframe.getContentPane().add(startPanel);
 
             startGameLabel.addMouseListener(new MouseAdapter() {
@@ -310,33 +319,9 @@ import view.SoundManager;
 
 				@Override
                 public void mouseClicked(MouseEvent e) {
-					 if (isHighScoreVisible) {
-				            startPanel.remove(highLabel);
-				            isHighScoreVisible = false;
-				            startPanel.revalidate();
-				            startPanel.repaint();
-				        }
-					if (isTextDisplayed) {
-					    startPanel.remove(imageLabel);
-					    isTextDisplayed = false;
-					} else {
+			        OverLayDialog_.showImage("design/how.png");
 
-					    ImageIcon originalIcon = new ImageIcon("design/how.png");
-
-					    Image originalImage = originalIcon.getImage();
-
-					    Image scaledImage = originalImage.getScaledInstance(250, 200, Image.SCALE_SMOOTH);
-
-					    ImageIcon scaledIcon = new ImageIcon(scaledImage);
-
-					    imageLabel = new JLabel(scaledIcon);
-					    startPanel.add(imageLabel);
-
-					    isTextDisplayed = true;
-					}
-					startPanel.revalidate();
-					startPanel.repaint();
-
+			    
                 }
 
                 @Override
@@ -353,29 +338,8 @@ import view.SoundManager;
 
 				@Override
                 public void mouseClicked(MouseEvent e) {
-                	 if (isTextDisplayed) {
-                         startPanel.remove(imageLabel);
-                         isTextDisplayed = false;
-                         startPanel.revalidate();
-                         startPanel.repaint();
-                     }
-                	 if (isHighScoreVisible) {
-                         startPanel.remove(highLabel);
+			        OverLayDialog_.showHighScore(highestScore);
 
-                         isHighScoreVisible = false;
-                     } else {
-                         highLabel = new JLabel("High Score: " + highestScore);
-                         highLabel.setFont(pixelFont);
-                         highLabel.setForeground(new Color(173, 216, 230));
-                         highLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-                         highLabel.setFont(pixelFont.deriveFont(25f));
-                         Border border = BorderFactory.createLineBorder(new Color(173, 216, 230), 2);
-                         highLabel.setBorder(border);
-                         startPanel.add(highLabel);
-                         isHighScoreVisible = true;
-                     }
-                     startPanel.revalidate();
-                     startPanel.repaint();
                 }
 
                 @Override
@@ -454,10 +418,10 @@ import view.SoundManager;
             queuePanel.setLayout(null);
             queuePanel.setOpaque(false);
             gamePanel.add(queuePanel);
-            queuePicLabels = new JLabel[3]; // Tạo mảng 3 JLabel
+            queuePicLabels = new JLabel[3];
             for (int i = 0; i < 3; i++) {
                 queuePicLabels[i] = new JLabel();
-                queuePicLabels[i].setBounds(10, 22 + (i * 60), 100, 25); // Đặt vị trí và kích thước cho mỗi JLabel
+                queuePicLabels[i].setBounds(10, 22 + (i * 60), 100, 25); 
                 queuePanel.add(queuePicLabels[i]);
             }
 //            updateQueue();
@@ -630,7 +594,29 @@ import view.SoundManager;
             exit.setAlignmentX(Component.CENTER_ALIGNMENT);
             exit.setFont(pixelFont.deriveFont(25f));
             gameOverPanel.add(exit);
+//            
+//            nameField = new JTextField(10);
+//            gameOverPanel.add(nameField);
+            winGamePanel = new JPanel();
+            winGamePanel.setBounds(10, 110, 392, 200);
+            winGamePanel.setOpaque(false);
+            winGamePanel.setLayout(new BoxLayout(winGamePanel, BoxLayout.Y_AXIS));
+
+            JLabel winGameLabel = new JLabel("You Win!");
+            winGameLabel.setFont(pixelFont.deriveFont(55f));
+            winGameLabel.setForeground(new Color(173, 216, 230));
+            winGameLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+            winGamePanel.add(winGameLabel);
             
+            finalScoreLabel1 = new JLabel();
+            finalScoreLabel1.setText("Final Score: " + game.getScore());
+            finalScoreLabel1.setFont(pixelFont.deriveFont(25f));
+            finalScoreLabel1.setForeground(new Color(173, 216, 230));
+            finalScoreLabel1.setAlignmentX(Component.CENTER_ALIGNMENT);
+            winGamePanel.add(finalScoreLabel1);
+
+            winGamePanel.setVisible(false);
+            jframe.getContentPane().add(winGamePanel);
             playAgainLabel.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
@@ -774,7 +760,11 @@ import view.SoundManager;
                         updateScoreLabel();
                         updateLevelLabel();
                         updateLinesLabel();
-                        if (!game.checkIfGameOver()) {
+                        if (game.getScore() >= MAX_SCORE) { 
+                            blockGravityThread.interrupt(); 
+                            showWinGamePanel();
+                            break;}
+                        else if (!game.checkIfGameOver()) {
                             game.nextBlock();
                             game.setHeldThisTurn(false);
                             updateQueue();
@@ -792,10 +782,50 @@ import view.SoundManager;
         }
         private void showGameOverMessage() {
             gamePanel.setVisible(false);
+            gameOverPanel.setVisible(true);
             gameOverScoreLabel.setText("Score: " + game.getScore());
             highScoreLabel.setText("High Score: " + game.getHighScoreFromFile());
-            gameOverPanel.setVisible(true);
+            String name = JOptionPane.showInputDialog(jframe, "Enter your name:", "Game Over", JOptionPane.PLAIN_MESSAGE);
+            if (name != null && !name.isEmpty()) {
+                ScoreManager.saveScore(name, game.getScore());
+            }
+
         }
+//        private void showGameOverMessage() {
+//            gamePanel.setVisible(false);
+//            gameOverScoreLabel.setText("Score: " + game.getScore());
+//            highScoreLabel.setText("High Score: " + game.getHighScoreFromFile());
+//            gameOverPanel.setVisible(true);
+//            String name = JOptionPane.showInputDialog(jframe, "Enter your name:", "Game Over", JOptionPane.PLAIN_MESSAGE);
+//            if (name != null && !name.isEmpty()) {
+//                ScoreManager.saveScore(name, game.getScore());
+//            }
+//            List<ScoreManager.Score> scores = ScoreManager.loadScores();
+//            if (!scores.isEmpty() && game.getScore() == scores.get(0).getScore()) {
+//                showWinGameImage();
+//            }
+//        }
+        private void showWinGamePanel() {
+            gamePanel.setVisible(false);
+            finalScoreLabel1.setText("Final Score: " + game.getScore());
+            winGamePanel.add(finalScoreLabel1);            
+            winGamePanel.setVisible(true);
+            String name = JOptionPane.showInputDialog(jframe, "Enter your name:", "Game Won", JOptionPane.PLAIN_MESSAGE);
+            if (name != null && !name.isEmpty()) {
+                ScoreManager.saveScore(name, game.getScore());
+            }
+            JOptionPane.showMessageDialog(jframe, "Congratulations! You've reached the maximum score of " + MAX_SCORE + "!");
+        }
+//        private void showWinGameImage() {
+//            Thread winThread = new Thread(() -> {
+//                JFrame winFrame = new JFrame("Win Game");
+//                JLabel winLabel = new JLabel(new ImageIcon("design/how.png"));
+//                winFrame.add(winLabel);
+//                winFrame.pack();
+//                winFrame.setVisible(true);
+//            });
+//            winThread.start();
+//        }
         public void gameOverAnimation() {
             for (int i = 0; i < 20; i++) {
                 for (int j = 0; j < 10; j++) {
