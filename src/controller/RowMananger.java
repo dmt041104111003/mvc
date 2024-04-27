@@ -1,4 +1,4 @@
-package view;
+package controller;
 
 import java.awt.Color;
 import java.util.ArrayList;
@@ -8,9 +8,9 @@ import java.util.Collections;
 import javax.swing.JPanel;
 import javax.swing.border.LineBorder;
 
-import controller.logic;
+import view.SoundManager;
 
-public class RowManager {
+public class RowMananger {
     public static void removeRows(JPanel[][] gameGrid, logic game, ArrayList<Integer> rowsToRemove) {
         int removedRowCount = 0;
         for (Integer i : rowsToRemove) {

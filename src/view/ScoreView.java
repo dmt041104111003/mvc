@@ -9,29 +9,29 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.border.LineBorder;
 
-import controller.logic;
-
-public class ScoreManager {
-    private static final String SCORE_FILE = "design/scores.txt";
+public class ScoreView {
+	private static final String SCORE_FILE = "design/scores.txt";
     private static List<JLabel> scoreLabels = new ArrayList<>();
 
     public static void saveScore(String name, int score) {
         List<Score> scores = loadScores();
         scores.add(new Score(name, score));
-        Collections.sort(scores, Collections.reverseOrder());
         saveScores(scores);
         displayScores(null);
     }
 
     public static List<Score> loadScores() {
         List<Score> scores = new ArrayList<>();
+        Set<String> scoreSets = new HashSet<>();
         try {
             File scoreFile = new File(SCORE_FILE);
             if (!scoreFile.exists()) {
@@ -44,7 +44,11 @@ public class ScoreManager {
                     if (parts.length == 2) {
                         String name = parts[0];
                         int score = Integer.parseInt(parts[1]);
-                        scores.add(new Score(name, score));
+                        String scoreKey = name + "|" + score;
+                        if (!scoreSets.contains(scoreKey)) {
+                            scoreSets.add(scoreKey);
+                            scores.add(new Score(name, score));
+                        }
                     }
                 }
             }
@@ -53,9 +57,8 @@ public class ScoreManager {
         }
         return scores;
     }
-
     private static void saveScores(List<Score> scores) {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(SCORE_FILE, true))) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(SCORE_FILE, false))) {
             for (Score score : scores) {
                 writer.write(score.getName() + "|" + score.getScore());
                 writer.newLine();
@@ -88,17 +91,6 @@ public class ScoreManager {
         }
     }
 
-    public static void updateScoreLabel(JLabel scoreLabel, logic game) {
-        scoreLabel.setText("Score: " + game.getScore());
-    }
-
-    public static void updateLevelLabel(JLabel levelLabel, logic game) {
-        levelLabel.setText("Level: " + game.getLevel());
-    }
-
-    public static void updateLinesLabel(JLabel linesLabel, logic game) {
-        linesLabel.setText("Lines: " + game.getTotalLines());
-    }
 
     public static void initScorePanel(frame frameInstance) {
         JPanel scorePanel = new JPanel();
