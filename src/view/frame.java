@@ -77,7 +77,7 @@ public class frame {
 		private int currentLevel;
 	    private KeyboardEventHandler keyboardEventHandler;
 	    private gravity gameThread;
-        private static final int MAX_LEVEL = 2;
+        private static final int MAX_LEVEL = 5;
         public frame(logic newGame) {
             game = newGame;
             Sound.toggleSound();
@@ -781,4 +781,4 @@ public class frame {
         public JFrame getjframe() {return jframe;}
         public int MAX() {return MAX_LEVEL;}
 		public boolean isSelectMode() {return isSelectMode;}
-    }   
+    }    

@@ -44,6 +44,8 @@ public class GameOverViewManager {
          String name = JOptionPane.showInputDialog(mainFrame.getjframe(), "Enter your name:", "Select Over", JOptionPane.PLAIN_MESSAGE);
          if (name != null && !name.isEmpty()) 
         	 {score.saveScore(name, game.getScore(),game.getLevel());
-}
+     	    score.saveUserToDatabase(name, game.getScore(),game.getLevel());
+
+        	 }
      }
 }

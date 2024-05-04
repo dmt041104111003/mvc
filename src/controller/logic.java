@@ -114,7 +114,13 @@ public class logic {
 
     public void increaseLevel() {
         level++;
-        fallDelay = (int) (1000 * Math.pow(0.8, level - 1));
+        if (level < 10) {
+            fallDelay -= 100;
+        } else if (level == 10) {
+            fallDelay -= 50;
+        } else {
+            fallDelay -= 10;
+        }
         requiredLineClears = (level + 1) * 10;
     }
     public boolean checkIfGameOver() {

@@ -180,4 +180,30 @@ public class score {
             e.printStackTrace();
         }
     }
+    public static void saveUserToDatabase(String name, int score, int level) {
+        try {
+            Connection conn = connectMySQL.getConnection();
+            if (conn != null) {
+                String query = "INSERT INTO score_select (name, score, level) VALUES (?, ?, ?)";
+                PreparedStatement statement = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+                statement.setString(1, name);
+                statement.setInt(2, score);
+                statement.setInt(3, level);
+
+                statement.executeUpdate();
+
+                ResultSet rs = statement.getGeneratedKeys();
+                if (rs.next()) {
+                    int id = rs.getInt(1);
+                    System.out.println("Inserted score ID: " + id);
+                    System.out.println("Name: " + name + ", Score: " + score + ", Level: " + level);
+                }
+
+                statement.close();
+                conn.close();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
 }

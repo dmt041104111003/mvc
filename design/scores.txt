@@ -6,3 +6,4 @@ vietnamese|1300
 đào mạnh tùng|2500
 hưng|0
 over|500
+70|70000
