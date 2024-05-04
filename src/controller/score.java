@@ -7,6 +7,11 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -14,6 +19,8 @@ import java.util.Set;
 
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+
+import connect.connectMySQL;
 
 public class score {
     private static final String SCORE_FILE = "design/scores.txt";
@@ -145,6 +152,32 @@ public class score {
         if (frame != null) {
             frame.revalidate();
             frame.repaint();
+        }
+    }
+    
+    public static void saveUserToDatabase(String name, int score) {
+        try {
+            Connection conn = connectMySQL.getConnection();
+            if (conn != null) {
+                String query = "INSERT INTO user (name_user, score_user) VALUES (?, ?)";
+                PreparedStatement statement = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+                statement.setString(1, name);
+                statement.setInt(2, score);
+
+                statement.executeUpdate();
+
+                ResultSet rs = statement.getGeneratedKeys();
+                if (rs.next()) {
+                    int userId = rs.getInt(1);
+                    System.out.println("Inserted user ID: " + userId);
+                    System.out.println("Name: " + name + ", Score: " + score);
+                }
+
+                statement.close();
+                conn.close();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 }

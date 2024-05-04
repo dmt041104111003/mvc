@@ -7,7 +7,6 @@ import controller.score;
 public class GameOverViewManager {
     private frame mainFrame;
     private logic game;
-
     public GameOverViewManager(frame mainFrame, logic game) {
         this.mainFrame = mainFrame;
         this.game = game;
@@ -18,7 +17,12 @@ public class GameOverViewManager {
         mainFrame.getgameOverScoreLabel().setText("Score: " + game.getScore());
         mainFrame.gethighScoreLabel().setText("High Score: " + game.getHighScoreFromFile());
         String name = JOptionPane.showInputDialog(mainFrame.getjframe(), "Enter your name:", "Game Over", JOptionPane.PLAIN_MESSAGE);
-        if (name != null && !name.isEmpty()) score.saveScore(name, game.getScore());
+        if (name != null && !name.isEmpty()) {
+        	score.saveScore(name, game.getScore());
+    	    score.saveUserToDatabase(name, game.getScore());
+
+        }
+        
     }
 
     public void showWinGamePanel() {
@@ -29,14 +33,17 @@ public class GameOverViewManager {
         mainFrame.getwinGamePanel().add(mainFrame.getfinalScoreLabel1());
         String name = JOptionPane.showInputDialog(mainFrame.getjframe(), "Enter your name:", "Game Won", JOptionPane.PLAIN_MESSAGE);
         if (name != null && !name.isEmpty()) score.saveScore(name, game.getScore());
-        JOptionPane.showOptionDialog(mainFrame.getjframe(), name, "Congratulations", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new String[]{"OK"}, "OK");
+        JOptionPane.showMessageDialog(mainFrame.getjframe(), "Congratulations! You've reached the maximum score of " + mainFrame.MAX() + "!");
     }
+
     public void showSelectOverPanel() {
          mainFrame.gameOverAnimation();
     	 mainFrame.getgamePanel().setVisible(false);
     	 mainFrame.getselectOverPanel().setVisible(true);
          mainFrame.getfinalScoreLabel2().setText("Final Score: " + game.getScore());
          String name = JOptionPane.showInputDialog(mainFrame.getjframe(), "Enter your name:", "Select Over", JOptionPane.PLAIN_MESSAGE);
-         if (name != null && !name.isEmpty()) score.saveScore(name, game.getScore(),game.getLevel());
+         if (name != null && !name.isEmpty()) 
+        	 {score.saveScore(name, game.getScore(),game.getLevel());
+}
      }
 }

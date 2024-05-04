@@ -5,7 +5,6 @@ import view.frame;
 public class gravity extends Thread {
     private final frame gameFrame;
     private boolean isRunning;
-    private static final int MAX_LEVEL = 0;
 
     public gravity(frame gameFrame) {
         this.gameFrame = gameFrame;
@@ -39,7 +38,7 @@ public class gravity extends Thread {
                 gameFrame.updateLinesLabel();
                 gameFrame.initFrameBackground();
 
-                if (gameFrame.getGame().getLevel() == MAX_LEVEL && !gameFrame.isSelectMode()) {
+                if (gameFrame.getGame().getLevel() == gameFrame.MAX() && !gameFrame.isSelectMode()) {
                     gameFrame.showWinGamePanel();
                     break;
                 } else if (!gameFrame.getGame().checkIfGameOver()) {

@@ -2,3 +2,7 @@ aaa|0
 aw|0
 ă|0
 aq|0
+vietnamese|1300
+đào mạnh tùng|2500
+hưng|0
+over|500

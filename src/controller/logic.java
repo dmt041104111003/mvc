@@ -111,12 +111,7 @@ public class logic {
             increaseLevel();
         }
     }
-    public int getCountdownFallDelay(int remainingSeconds) {
-        if (remainingSeconds > 60) return 400; 
-         else if (remainingSeconds > 30) return 450; 
-         else return 400; 
-    }
-    public void fall() { fallDelay = getCountdownFallDelay(remainingSeconds);}
+
     public void increaseLevel() {
         level++;
         fallDelay = (int) (1000 * Math.pow(0.8, level - 1));
@@ -425,8 +420,8 @@ public class logic {
     public void clearSetBlocks() {setBlocks.clear();}
     public void setLevel(int level) {this.level = level;}
     public void updateFallDelay() {fallDelay = (int) (1000 * Math.pow(0.8, level - 1));}
-    public void setLevelAndUpdateFallDelay(int newLevel) {
-        level = newLevel;
-        updateFallDelay();
-    }
+//    public void setLevelAndUpdateFallDelay(int newLevel) {
+//        level = newLevel;
+//        updateFallDelay();
+//    }
 }
