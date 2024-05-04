@@ -8,18 +8,15 @@ import java.util.Collections;
 import javax.swing.JPanel;
 import javax.swing.border.LineBorder;
 
-import view.SoundManager;
 
 public class RowMananger {
     public static void removeRows(JPanel[][] gameGrid, logic game, ArrayList<Integer> rowsToRemove) {
         int removedRowCount = 0;
         for (Integer i : rowsToRemove) {
-            int green = 250;
-            int blue = 185;
+            int green = 250, blue = 185;
             for (int j = 0; j < 10; j++) {
                 gameGrid[j][i].setBackground(new Color(250, green, blue));
-                green -= 10;
-                blue -= 10;
+                green -= 10; blue -= 10;
                 try {
                     Thread.sleep(15);
                 } catch (InterruptedException ignored) {}
@@ -31,7 +28,7 @@ public class RowMananger {
                 for (int k = 0; k < game.getSetBlocks().size(); k++) {
                     if (Arrays.equals(new int[]{j, i}, game.getSetBlocks().get(k))) {
                         if (!musicBlockSoundPlaying) {
-                            SoundManager.playBlockSound("design/music-block.wav");
+                            Sound.playBlockSound("design/music-block.wav");
                             musicBlockSoundPlaying = true;
                         }
                         game.removeFromSetBlocks(k);
@@ -43,7 +40,7 @@ public class RowMananger {
             }
             removedRowCount++;
             if (removedRowCount >= 2) {
-                SoundManager.playBlockSound("design/3Lines.wav");
+                Sound.playBlockSound("design/3Lines.wav");
                 removedRowCount = 0;
             }
         }

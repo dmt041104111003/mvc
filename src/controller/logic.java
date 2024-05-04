@@ -1,16 +1,17 @@
 package controller;
 
 import java.awt.*;
+
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.concurrent.ThreadLocalRandom;
 
 import model.block;
+
 public class logic {
 
     private block currentBlock;
-
     private int[] blockQueue;
     private final int[][] previousBlockPos;
     private int fallDelay = 500;
@@ -20,21 +21,19 @@ public class logic {
     private int clearedLines = 0;
     private int requiredLineClears = 10;
     private int totalLines = 0;
-
     private boolean heldThisTurn = false;
     private boolean fastFall = false;
     private boolean running = false;
-
     private final ArrayList<int[]> setBlocks;
-
 	private BufferedReader bufferedReader;
-
+	private int remainingSeconds;
     public logic() {
         initBlockQueue();
         setBlocks = new ArrayList<>();
         previousBlockPos = new int[4][2];
     }
     public void startGame() {
+        fallDelay = 500;
         running = true;
         nextBlock();
     }
@@ -53,9 +52,8 @@ public class logic {
     }
     private void initBlockQueue() {
         blockQueue = new int[3];
-        for (int i = 0 ; i < 3; i++) {
+        for (int i = 0 ; i < 3; i++) 
             blockQueue[i] = ThreadLocalRandom.current().nextInt(0, 7);
-        }
     }
     public void shuffleAndAddToQueue() {
         blockQueue[0] = blockQueue[1];
@@ -67,50 +65,36 @@ public class logic {
         shuffleAndAddToQueue();
     }
     public void updatePreviousBlockPos() {
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < 4; i++) 
             previousBlockPos[i] = Arrays.copyOf(currentBlock.getBlockLocation()[i], currentBlock.getBlockLocation()[i].length);
-        }
     }
     public boolean isTouchingBottomOrBlock() {
         for (int i = 0; i < 4; i++) {
-            if (currentBlock.getBlockLocation()[i][1] == 19) {
-                return true;
-            } else {
-                for (int[] setBlock : setBlocks) {
-                    if (Arrays.equals(new int[]{currentBlock.getBlockLocation()[i][0], currentBlock.getBlockLocation()[i][1] + 1}, setBlock)) {
+            if (currentBlock.getBlockLocation()[i][1] == 19) return true;
+             else 
+                for (int[] setBlock : setBlocks) 
+                    if (Arrays.equals(new int[]{currentBlock.getBlockLocation()[i][0], currentBlock.getBlockLocation()[i][1] + 1}, setBlock)) 
                         return true;
-                    }
-                }
-            }
+
         }
         return false;
     }
-    public void moveBlockDown() {
-        currentBlock.moveBlockDown();
-    }
+    public void moveBlockDown() {currentBlock.moveBlockDown();}
     public void addCurrentToSetBlock() {
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < 4; i++) 
             setBlocks.add(new int[]{currentBlock.getBlockLocation()[i][0], currentBlock.getBlockLocation()[i][1]});
-        }
     }
     public ArrayList<Integer> checkForFullRows() {
         ArrayList<Integer> rowsToRemove = new ArrayList<>();
         for (int i = 19; i > -1; i--) {
             int count = 0;
-            for (int j = 0; j < 10; j++) {
-                for (int[] setBlock : setBlocks) {
-                    if (Arrays.equals(new int[]{j, i}, setBlock)) {
-                        count++;
-                    }
-                }
-            }
-            if (count == 10) {
-                rowsToRemove.add(i);
-            }
+            for (int j = 0; j < 10; j++) 
+                for (int[] setBlock : setBlocks) 
+                    if (Arrays.equals(new int[]{j, i}, setBlock)) count++;
+                    
+            if (count == 10) rowsToRemove.add(i);
         }
-        if (rowsToRemove.size() > 0) {
-            updateScoreAndLevel(rowsToRemove.size());
-        }
+        if (rowsToRemove.size() > 0) updateScoreAndLevel(rowsToRemove.size());
         return rowsToRemove;
     }
     public void updateScoreAndLevel(int rowToRemoveCount) {
@@ -122,20 +106,20 @@ public class logic {
         }
         totalLines += rowToRemoveCount;
         clearedLines += rowToRemoveCount;
-        if (clearedLines >= (level + 1) * 10) {
+        if (clearedLines >= requiredLineClears) {
+        	clearedLines = clearedLines - requiredLineClears;
             increaseLevel();
         }
     }
-
+    public int getCountdownFallDelay(int remainingSeconds) {
+        if (remainingSeconds > 60) return 400; 
+         else if (remainingSeconds > 30) return 450; 
+         else return 400; 
+    }
+    public void fall() { fallDelay = getCountdownFallDelay(remainingSeconds);}
     public void increaseLevel() {
         level++;
-        if (level < 10) {
-            fallDelay -= 100;
-        } else if (level == 10) {
-            fallDelay -= 50;
-        } else {
-            fallDelay -= 10;
-        }
+        fallDelay = (int) (1000 * Math.pow(0.8, level - 1));
         requiredLineClears = (level + 1) * 10;
     }
     public boolean checkIfGameOver() {
@@ -150,35 +134,25 @@ public class logic {
     public void moveSide(int dir) {
         if (!isTouchingSideOrBlock(dir)) {
             updatePreviousBlockPos();
-            if (dir == 0) {
-                currentBlock.moveBlockLeft();
-            } else if (dir == 1) {
-                currentBlock.moveBlockRight();
-            }
+            if (dir == 0) currentBlock.moveBlockLeft();
+            else if (dir == 1) currentBlock.moveBlockRight();
         }
     }
     public boolean isTouchingSideOrBlock(int dir) {
         for (int i = 0; i < 4; i++) {
             if (dir == 0) {
-                if (currentBlock.getBlockLocation()[i][0] == 0) {
-                    return true;
-                } else {
-                    for (int[] setBlock : setBlocks) {
-                        if (Arrays.equals(new int[]{currentBlock.getBlockLocation()[i][0] - 1, currentBlock.getBlockLocation()[i][1]}, setBlock)) {
+                if (currentBlock.getBlockLocation()[i][0] == 0) return true;
+                else 
+                    for (int[] setBlock : setBlocks) 
+                        if (Arrays.equals(new int[]{currentBlock.getBlockLocation()[i][0] - 1, currentBlock.getBlockLocation()[i][1]}, setBlock))
                             return true;
-                        }
-                    }
-                }
+
             } else if (dir == 1) {
-                if (currentBlock.getBlockLocation()[i][0] == 9) {
-                    return true;
-                } else {
-                    for (int[] setBlock : setBlocks) {
-                        if (Arrays.equals(new int[]{currentBlock.getBlockLocation()[i][0] + 1, currentBlock.getBlockLocation()[i][1]}, setBlock)) {
+                if (currentBlock.getBlockLocation()[i][0] == 9) return true;
+                 else 
+                    for (int[] setBlock : setBlocks) 
+                        if (Arrays.equals(new int[]{currentBlock.getBlockLocation()[i][0] + 1, currentBlock.getBlockLocation()[i][1]}, setBlock)) 
                             return true;
-                        }
-                    }
-                }
             }
         }
         return false;
@@ -390,15 +364,10 @@ public class logic {
             }
         }
         for (int j = 0; j < 4; j++) {
-            if (rotateLoc[j][0] < 0 || rotateLoc[j][0] > 9) {
-                flag = true;
-            } else if (rotateLoc[j][1] < 0 || rotateLoc[j][1] > 19) {
-                flag = true;
-            }
+            if (rotateLoc[j][0] < 0 || rotateLoc[j][0] > 9) flag = true;
+             else if (rotateLoc[j][1] < 0 || rotateLoc[j][1] > 19) flag = true;
         }
-        if (currentBlock.getBlockType() == 3) {
-            flag = true;
-        }
+        if (currentBlock.getBlockType() == 3) flag = true;
         if (!flag) {
             updatePreviousBlockPos();
             currentBlock.setNewLocation(rotateLoc);
@@ -415,13 +384,10 @@ public class logic {
             while ((buffer = bufferedReader.readLine()) != null) {
                 highScore = Integer.parseInt(buffer);
             }
-        } catch (IOException | NumberFormatException e) {
-            e.printStackTrace();
-        }
+        } catch (IOException | NumberFormatException e) {e.printStackTrace();}
         return highScore;
     }
-
-
+    
     public void writeHighScoreToFile(int highScore) {
         try {
             File highScoreFile = new File("design/highscore.txt");
@@ -430,101 +396,37 @@ public class logic {
             bufferedWriter.write(highScore + "");
             bufferedWriter.close();
             fileWriter.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        } catch (IOException e) {e.printStackTrace();}
     }
     public void checkIfHighScore() {
-        if (score > getHighScoreFromFile()) {
-            writeHighScoreToFile(score);
-        }
+        if (score > getHighScoreFromFile()) writeHighScoreToFile(score);
     }
-    public boolean isHeldThisTurn() {
-        return heldThisTurn;
+    public boolean isHeldThisTurn() {return heldThisTurn;}
+    public int[][] getCurrentBlockPos() {return currentBlock.getBlockLocation();}
+    public Color getCurrentBlockColor() {return currentBlock.getBlockColor();}
+    public int[][] getPreviousBlockPos() {return previousBlockPos;}
+    public ArrayList<int[]> getSetBlocks() {return setBlocks;}
+    public int getFallDelay() {return fallDelay;}
+    public boolean isFastFall() {return fastFall;}
+    public boolean isRunning() {return running;}
+    public int[] getBlockQueue() {return blockQueue;}
+    public int getScore() {return score;}
+    public int getLevel() {return level;}
+    public int getTotalLines() {return totalLines;}
+    public int getCurrentHoldBlock() {return currentHoldBlock;}
+    public int getCurrentBlockType() {return currentBlock.getBlockType();}
+    public void setHeldThisTurn(boolean heldThisTurn) {this.heldThisTurn = heldThisTurn;}
+    public void setRunning(boolean running) {this.running = running;}
+    public void newCurrentBlock(int blockType) {currentBlock = new block(blockType);}
+    public void setCurrentHoldBlock(int currentHoldBlock) {this.currentHoldBlock = currentHoldBlock;}
+    public void setFastFall(boolean fastFall) {this.fastFall = fastFall;}
+    public void addToSetBlocks(int[] blockToAdd) {setBlocks.add(blockToAdd);}
+    public void removeFromSetBlocks(int index) {setBlocks.remove(index);}
+    public void clearSetBlocks() {setBlocks.clear();}
+    public void setLevel(int level) {this.level = level;}
+    public void updateFallDelay() {fallDelay = (int) (1000 * Math.pow(0.8, level - 1));}
+    public void setLevelAndUpdateFallDelay(int newLevel) {
+        level = newLevel;
+        updateFallDelay();
     }
-
-    public int[][] getCurrentBlockPos() {
-        return currentBlock.getBlockLocation();
-    }
-
-    public Color getCurrentBlockColor() {
-        return currentBlock.getBlockColor();
-    }
-
-    public int[][] getPreviousBlockPos() {
-        return previousBlockPos;
-    }
-
-    public ArrayList<int[]> getSetBlocks() {
-        return setBlocks;
-    }
-
-    public int getFallDelay() {
-        return fallDelay;
-    }
-
-    public boolean isFastFall() {
-        return fastFall;
-    }
-
-    public boolean isRunning() {
-        return running;
-    }
-
-    public int[] getBlockQueue() {
-        return blockQueue;
-    }
-
-    public int getScore() {
-        return score;
-    }
-
-    public int getLevel() {
-        return level;
-    }
-
-    public int getTotalLines() {
-        return totalLines;
-    }
-
-    public int getCurrentHoldBlock() {
-        return currentHoldBlock;
-    }
-
-    public int getCurrentBlockType() {
-        return currentBlock.getBlockType();
-    }
-    public void setHeldThisTurn(boolean heldThisTurn) {
-        this.heldThisTurn = heldThisTurn;
-    }
-
-    public void setRunning(boolean running) {
-        this.running = running;
-    }
-
-    public void newCurrentBlock(int blockType) {
-        currentBlock = new block(blockType);
-    }
-
-    public void setCurrentHoldBlock(int currentHoldBlock) {
-        this.currentHoldBlock = currentHoldBlock;
-    }
-
-    public void setFastFall(boolean fastFall) {
-        this.fastFall = fastFall;
-    }
-
-    public void addToSetBlocks(int[] blockToAdd) {
-        setBlocks.add(blockToAdd);
-    }
-
-    public void removeFromSetBlocks(int index) {
-        setBlocks.remove(index);
-    }
-
-    public void clearSetBlocks() {
-        setBlocks.clear();
-    }
-
 }
-

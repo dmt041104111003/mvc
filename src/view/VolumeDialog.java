@@ -11,7 +11,7 @@ import javax.swing.JPanel;
 import javax.swing.JSlider;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-
+import controller.Sound;
 public class VolumeDialog extends JDialog {
 	private static final long serialVersionUID = 1L;
 
@@ -26,8 +26,8 @@ public class VolumeDialog extends JDialog {
         setLocationRelativeTo(owner);
         setLayout(new BorderLayout());
 
-        previousVolume = SoundManager.getVolume();
-        previousRowSoundVolume = SoundManager.getRowSoundVolume(); 
+        previousVolume = Sound.getVolume();
+        previousRowSoundVolume = Sound.getRowSoundVolume(); 
         
         volumeSlider = new JSlider(0, 100, previousVolume);
         volumeSlider.setMajorTickSpacing(25);
@@ -35,30 +35,21 @@ public class VolumeDialog extends JDialog {
         volumeSlider.setPaintLabels(true);
         volumeSlider.addChangeListener(new ChangeListener() {
             @Override
-            public void stateChanged(ChangeEvent e) {
-                SoundManager.setVolume(volumeSlider.getValue());
-            }
+            public void stateChanged(ChangeEvent e) {Sound.setVolume(volumeSlider.getValue());}
         });
-
-        add(volumeSlider, BorderLayout.CENTER);
-
-        
         rowSoundSlider = new JSlider(0, 100, (int) (previousRowSoundVolume * 100));
         rowSoundSlider.setMajorTickSpacing(25);
         rowSoundSlider.setPaintTicks(true);
         rowSoundSlider.setPaintLabels(true);
         rowSoundSlider.addChangeListener(new ChangeListener() {
             @Override
-            public void stateChanged(ChangeEvent e) {
-                SoundManager.setRowSoundVolume(rowSoundSlider.getValue() / 100.0f);
-            }
+            public void stateChanged(ChangeEvent e) {Sound.setRowSoundVolume(rowSoundSlider.getValue() / 100.0f);}
         });
         
         JPanel sliderPanel = new JPanel();
         sliderPanel.add(volumeSlider);
         sliderPanel.add(rowSoundSlider);
         add(sliderPanel, BorderLayout.CENTER);
-        
         
         JPanel buttonPanel = new JPanel();
         JButton okButton = new JButton("OK");
@@ -69,11 +60,10 @@ public class VolumeDialog extends JDialog {
         addWindowListener(new WindowListener() {
             @Override
             public void windowClosing(WindowEvent e) {
-                SoundManager.setVolume(previousVolume); 
-                SoundManager.setRowSoundVolume(previousRowSoundVolume);
+                Sound.setVolume(previousVolume); 
+                Sound.setRowSoundVolume(previousRowSoundVolume);
                 dispose(); 
             }
-
             @Override public void windowOpened(WindowEvent e) {}
             @Override public void windowClosed(WindowEvent e) {}
             @Override public void windowIconified(WindowEvent e) {}

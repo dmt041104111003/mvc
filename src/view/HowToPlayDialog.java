@@ -1,7 +1,6 @@
 package view;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Image;
 
 import javax.swing.ImageIcon;
@@ -13,12 +12,12 @@ import javax.swing.border.EmptyBorder;
 
 public class HowToPlayDialog extends JDialog {
     private static final long serialVersionUID = 1L;
-
     public HowToPlayDialog(JFrame parent, frame parentFrame) {
         super(parent, "How to Play", true);
         setSize(400, 300);
+        setResizable(false);
         setLocationRelativeTo(parent);
-
+   
         JPanel contentPanel = new JPanel(new BorderLayout());
         contentPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
         getContentPane().add(contentPanel);
@@ -30,6 +29,8 @@ public class HowToPlayDialog extends JDialog {
         ImageIcon scaledIcon = new ImageIcon(scaledImage);
         imageLabel.setIcon(scaledIcon);
         imageLabel.setHorizontalAlignment(JLabel.CENTER);
+        
+        
         contentPanel.add(imageLabel, BorderLayout.CENTER);
     }
 }

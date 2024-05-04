@@ -1,7 +1,6 @@
 package view;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -15,6 +14,7 @@ public class HighScoreDialog extends JDialog {
     public HighScoreDialog(JFrame parent, frame parentFrame, int highScore) {
         super(parent, "High Score", true);
         setSize(400, 300);
+        setResizable(false);
         setLocationRelativeTo(parent);
 
         JPanel contentPanel = new JPanel(new BorderLayout());

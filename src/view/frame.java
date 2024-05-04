@@ -7,13 +7,13 @@ import java.awt.FontFormatException;
 import java.awt.Image;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.concurrent.ThreadLocalRandom;
+import java.util.Arrays;
+import java.util.List;
 
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
@@ -21,15 +21,17 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
 import javax.swing.border.LineBorder;
 
-import controller.logic;
-import controller.ScoreManager;
+import controller.GameOverAnimationManager;
+import controller.GameStateManager;
+import controller.KeyboardEventHandler;
 import controller.RowMananger;
-//import controller.SoundEffectManager;
-    public class frame {
- 
+import controller.ScoreManager;
+import controller.Sound;
+import controller.gravity;
+import controller.logic;
+public class frame {
         private JFrame jframe;
         private JPanel startPanel;
          JPanel gamePanel;
@@ -40,7 +42,6 @@ import controller.RowMananger;
         private JPanel[][] gameGrid;
         private JPanel winGamePanel;
         private JLabel finalScoreLabel1;
-
         private JLabel titleLabel;
         private JLabel backgroundLabel;
         JLabel scoreLabel;
@@ -50,36 +51,35 @@ import controller.RowMananger;
         private JLabel gameOverScoreLabel;
         private JLabel highScoreLabel;
         private JLabel[] queuePicLabels;
-
         public Font pixelFont;
-
-        private static final int MAX_LEVEL = 10;
-
         private JPanel scorePanel_2;
         private JLabel scoreLabel_2;
         private JPanel scorePanel_3;
         private JLabel scoreLabel_3;
-//        private OverLayDialog OverLayDialog_;
-
- 
-
+        private int currentBackgroundIndex = 1;
+        private JLabel finalScoreLabel3;
+        private JPanel selectOverPanel;
+        private JLabel selectOverLabel;
+        private JLabel finalScoreLabel2;
+        private static final String INITIAL_BACKGROUND_IMAGE_PATH = "design/background-1.jpg";
+        private String currentBackgroundImagePath;
+        private boolean isSelectMode = false; 
         private Thread titleLabelThread;
-        private Thread blockGravityThread;
-
-
         private boolean animateTitle = true;
-
         private final logic game;
 		private JLabel high_score;
-
 		private JLabel howtoplaygame;
 		private int highestScore;
-//		private boolean isSoundPlaying = false;
-
+		private GameOverViewManager gameOverViewManager;
+		private GameOverAnimationManager gameOverAnimationManager;
+		private GameStateManager gameStateManager;
 		private JLabel music;
+		private int currentLevel;
+	    private KeyboardEventHandler keyboardEventHandler;
+	    private gravity gameThread;
         public frame(logic newGame) {
             game = newGame;
-            SoundManager.toggleSound();
+            Sound.toggleSound();
             highestScore = game.getHighScoreFromFile();
             frame_tetris();
             initFont();
@@ -89,75 +89,76 @@ import controller.RowMananger;
             initPausePanel();
             initGridPanel();
             initGameGrid();
-            ScoreView.initScorePanel(this);
+            initScorePanel();
             initLevelPanel();
             initLinesPanel();
             ImageManager.initImageIcons();
             initQueuePanel();
             initHoldPanel();
-
+            initSelectOverPanel();
             ImageManager.initImageIcons();
-//            OverLayDialog_ = new OverLayDialog(jframe, this);
+            gameOverViewManager = new GameOverViewManager(this, game);
+            gameOverAnimationManager = new GameOverAnimationManager(gameGrid);
+            gameStateManager = new GameStateManager(gameGrid, holdImgLabel, scoreLabel, levelLabel, linesLabel, queuePicLabels, game);
             initFrameBackground();
-
+            initKeyboardEventHandler();
             jframe.setVisible(true);
         }
-        
         private void frame_tetris() {
             jframe = new JFrame("Game Tetris");
             jframe.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             jframe.getContentPane().setLayout(null);
             jframe.setResizable(false);
             jframe.setSize(418, 561);
-            jframe.addKeyListener(keyListener);
+            jframe.getContentPane().setLayout(null);
         }
         private void initFont() {
             try {
                 File fontFile = new File("design/font.ttf");
                 Font newFont = Font.createFont(Font.TRUETYPE_FONT, fontFile);
                 pixelFont = newFont.deriveFont(20f);
-            } catch (IOException | FontFormatException e) {
-                e.printStackTrace();
-            }
+            } catch (IOException | FontFormatException e) {e.printStackTrace();}
         }
-        private void replaceBackgroundLabel() {
-            ImageIcon backgroundImage = BackgroundManager.getBackgroundImageForLevel(game.getLevel());
-            int frameWidth = jframe.getWidth();
-            int frameHeight = jframe.getHeight();
-            Image scaledImage = backgroundImage.getImage().getScaledInstance(frameWidth, frameHeight, Image.SCALE_SMOOTH);
-            ImageIcon scaledBackgroundImage = new ImageIcon(scaledImage);
-            JLabel newBackgroundLabel = new JLabel(scaledBackgroundImage);
-            newBackgroundLabel.setBounds(0, 0, frameWidth, frameHeight);
-
-            if (backgroundLabel != null) {
-                jframe.getContentPane().remove(backgroundLabel);
-            }
-            jframe.getContentPane().add(newBackgroundLabel);
-            backgroundLabel = newBackgroundLabel;
-        }
-        private void initFrameBackground() {
+        public void initFrameBackground() {
             try {
-                replaceBackgroundLabel();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+                String backgroundImagePath = currentBackgroundImagePath != null ? currentBackgroundImagePath : INITIAL_BACKGROUND_IMAGE_PATH;
+                ImageIcon backgroundImage = new ImageIcon(backgroundImagePath);
+                int frameWidth = jframe.getWidth();
+                int frameHeight = jframe.getHeight();
+                Image scaledImage = backgroundImage.getImage().getScaledInstance(frameWidth, frameHeight, Image.SCALE_SMOOTH);
+                ImageIcon scaledBackgroundImage = new ImageIcon(scaledImage);
+                JLabel newBackgroundLabel = new JLabel(scaledBackgroundImage);
+                newBackgroundLabel.setBounds(0, 0, frameWidth, frameHeight);
+                if (backgroundLabel != null) 
+                    jframe.getContentPane().remove(backgroundLabel);
+                jframe.getContentPane().add(newBackgroundLabel, Integer.valueOf(Integer.MIN_VALUE));
+                backgroundLabel = newBackgroundLabel;
+                jframe.revalidate();
+                jframe.repaint();
+            } catch (Exception e) {e.printStackTrace();}
         }
-        private void resetAllComponents() {
-            game.resetGame();
-            updateHoldImage();
-            updateQueue();
-            updateScoreLabel();
-            updateLinesLabel();
-            updateLevelLabel();
-            initFrameBackground();
-            for (int i = 0; i < 20; i++) {
-                for (int j = 0; j < 10; j++) {
-                    gameGrid[j][i].setBackground(Color.WHITE);
-                    gameGrid[j][i].setBorder(null);
-                    gameGrid[j][i].setOpaque(false);
-                }
-            }
+        private void initKeyboardEventHandler() {
+            keyboardEventHandler = new KeyboardEventHandler(game, this);
+            jframe.addKeyListener(new KeyAdapter() {
+                @Override
+                public void keyPressed(KeyEvent e) {keyboardEventHandler.handleKeyEvent(e);}
+                @Override
+                public void keyReleased(KeyEvent e) {if (e.getKeyCode() == KeyEvent.VK_DOWN) game.setFastFall(false);}
+            });
         }
+        private void changeBackgroundImage() {
+            try {
+                currentBackgroundIndex = (currentBackgroundIndex + 1) % backgroundImagePaths.size();
+                currentBackgroundImagePath = backgroundImagePaths.get(currentBackgroundIndex);
+                initFrameBackground();
+            } catch (Exception e) {e.printStackTrace();}
+        }
+        private List<String> backgroundImagePaths = Arrays.asList(
+        	    "design/background-1.jpg",
+        	    "design/background-2.jpg",
+        	    "design/background-3.png",
+        	    "design/background-4.jpg"
+        );
         private void initStartPanel() {
             startPanel = new JPanel();
             startPanel.setBounds(10, 77, 392, 445);
@@ -176,6 +177,12 @@ import controller.RowMananger;
             startGameLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
             startGameLabel.setFont(pixelFont.deriveFont(25f));
             startPanel.add(startGameLabel);
+
+            JLabel selectLevelLabel = new JLabel("Select Level");
+            selectLevelLabel.setForeground(new Color(173, 216, 230));
+            selectLevelLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+            selectLevelLabel.setFont(pixelFont.deriveFont(25f));
+            startPanel.add(selectLevelLabel);
             
             high_score = new JLabel("High score");
             high_score.setForeground(new Color(173, 216, 230));
@@ -221,95 +228,121 @@ import controller.RowMananger;
                     updateCurrentBlock(true);
                     gravity();
                 }
-
-                public void mouseEntered(MouseEvent e) {
-                    startGameLabel.setForeground(Color.WHITE);
-                }
-
-                public void mouseExited(MouseEvent e) {
-                    startGameLabel.setForeground(new Color(173, 216, 230));
-                }
+                public void mouseEntered(MouseEvent e) {startGameLabel.setForeground(Color.WHITE);}
+                public void mouseExited(MouseEvent e) {startGameLabel.setForeground(new Color(173, 216, 230));}
+            });
+            selectLevelLabel.addMouseListener(new MouseAdapter() {
+                public void mouseClicked(MouseEvent e) {showLevelSelectDialog();}
+                public void mouseEntered(MouseEvent e) {selectLevelLabel.setForeground(Color.WHITE);}
+                public void mouseExited(MouseEvent e) {selectLevelLabel.setForeground(new Color(173, 216, 230));}
             });
             music.addMouseListener(new MouseAdapter() {
                 public void mouseClicked(MouseEvent e) {
                 	VolumeDialog volumeDialog = new VolumeDialog(jframe);
                     volumeDialog.setVisible(true);
                 }
-
-                public void mouseEntered(MouseEvent e) {
-                	music.setForeground(Color.WHITE);
-                }
-
-                public void mouseExited(MouseEvent e) {
-                	music.setForeground(new Color(173, 216, 230));
-                }
+                public void mouseEntered(MouseEvent e) {music.setForeground(Color.WHITE);}
+                public void mouseExited(MouseEvent e) {music.setForeground(new Color(173, 216, 230));}
             });
             switchThemeLabel.addMouseListener(new MouseAdapter() {
-                public void mouseClicked(MouseEvent e) {
-//                    changeBackgroundImage();
-                }
-
-                public void mouseEntered(MouseEvent e) {
-                    switchThemeLabel.setForeground(Color.WHITE);
-                }
-
-                public void mouseExited(MouseEvent e) {
-                    switchThemeLabel.setForeground(new Color(173, 216, 230));
-                }
+                public void mouseClicked(MouseEvent e) {changeBackgroundImage();}
+                public void mouseEntered(MouseEvent e) {switchThemeLabel.setForeground(Color.WHITE);}
+                public void mouseExited(MouseEvent e) {switchThemeLabel.setForeground(new Color(173, 216, 230));}
             });
             exit.addMouseListener(new MouseAdapter() {
-                public void mouseClicked(MouseEvent e) {
-                    System.exit(0);
-                }
-
-                public void mouseEntered(MouseEvent e) {
-                	exit.setForeground(Color.WHITE);
-                }
-
-                public void mouseExited(MouseEvent e) {
-                	exit.setForeground(new Color(173, 216, 230));
-                }
+                public void mouseClicked(MouseEvent e) {System.exit(0);}
+                public void mouseEntered(MouseEvent e) {exit.setForeground(Color.WHITE);}
+                public void mouseExited(MouseEvent e) {exit.setForeground(new Color(173, 216, 230));}
             });
-            
             howtoplaygame.addMouseListener(new MouseAdapter() {
                 public void mouseClicked(MouseEvent e) {
                 	HowToPlayDialog howToPlayDialog = new HowToPlayDialog(jframe, frame.this);
                     howToPlayDialog.setVisible(true);
                 }
-                public void mouseEntered(MouseEvent e) {
-                    howtoplaygame.setForeground(Color.WHITE);
-                }
-
-                public void mouseExited(MouseEvent e) {
-                    howtoplaygame.setForeground(new Color(173, 216, 230));
-                }
+                public void mouseEntered(MouseEvent e) {howtoplaygame.setForeground(Color.WHITE);}
+                public void mouseExited(MouseEvent e) {howtoplaygame.setForeground(new Color(173, 216, 230));}
             });
             high_score.addMouseListener(new MouseAdapter() {
-
                 public void mouseClicked(MouseEvent e) {
                 	HighScoreDialog highScoreDialog = new HighScoreDialog(jframe, frame.this, highestScore);
                     highScoreDialog.setVisible(true);
-
                 }
-
-                public void mouseEntered(MouseEvent e) {
-                	high_score.setForeground(Color.WHITE);
-                }
-
-                public void mouseExited(MouseEvent e) {
-                	high_score.setForeground(new Color(173, 216, 230));
-                }
+                public void mouseEntered(MouseEvent e) {high_score.setForeground(Color.WHITE);}
+                public void mouseExited(MouseEvent e) {high_score.setForeground(new Color(173, 216, 230));}
             });
         }
-       
-        
         private void initGamePanel() {
             gamePanel = new JPanel();
             gamePanel.setBounds(0, 0, 402, 522);
             gamePanel.setOpaque(false);
             gamePanel.setVisible(false);
             gamePanel.setLayout(null);
-            jframe.getContentPane().add(gamePanel);
+            jframe.getContentPane().add(gamePanel);         
+        }
+        private void initSelectOverPanel() {
+            selectOverPanel = new JPanel();
+            selectOverPanel.setBounds(10, 110, 392, 412);
+            selectOverPanel.setOpaque(false);
+            selectOverPanel.setLayout(new BoxLayout(selectOverPanel, BoxLayout.Y_AXIS));
+
+            selectOverLabel = new JLabel("Select Over");
+            selectOverLabel.setFont(pixelFont.deriveFont(55f));
+            selectOverLabel.setForeground(new Color(173, 216, 230));
+            selectOverLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+            selectOverPanel.add(selectOverLabel);
+
+            finalScoreLabel2 = new JLabel("Final Score: " + game.getScore());
+            finalScoreLabel2.setFont(pixelFont.deriveFont(25f));
+            finalScoreLabel2.setForeground(new Color(173, 216, 230));
+            finalScoreLabel2.setAlignmentX(Component.CENTER_ALIGNMENT);
+            selectOverPanel.add(finalScoreLabel2);
+
+            JLabel playAgainLabel = new JLabel("Play Again");
+            playAgainLabel.setForeground(new Color(173, 216, 230));
+            playAgainLabel.setFont(pixelFont.deriveFont(25f));
+            playAgainLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+            selectOverPanel.add(playAgainLabel);
+
+            JLabel homeLabel = new JLabel("Home");
+            homeLabel.setForeground(new Color(173, 216, 230));
+            homeLabel.setFont(pixelFont.deriveFont(25f));
+            homeLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+            selectOverPanel.add(homeLabel);
+
+            JLabel exitLabel = new JLabel("Exit");
+            exitLabel.setForeground(new Color(173, 216, 230));
+            exitLabel.setFont(pixelFont.deriveFont(25f));
+            exitLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+            selectOverPanel.add(exitLabel);
+
+            selectOverPanel.setVisible(false);
+            jframe.getContentPane().add(selectOverPanel);
+
+            playAgainLabel.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                	 selectOverPanel.setVisible(false);
+                	 startGameWithLevel(currentLevel);
+                }
+                public void mouseEntered(MouseEvent e) {playAgainLabel.setForeground(Color.WHITE);}
+                public void mouseExited(MouseEvent e) {playAgainLabel.setForeground(new Color(173, 216, 230));}
+            });
+            homeLabel.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    selectOverPanel.setVisible(false);
+                    startPanel.setVisible(true);
+                    game.resetGame();
+                }
+                public void mouseEntered(MouseEvent e) {homeLabel.setForeground(Color.WHITE);}
+                public void mouseExited(MouseEvent e) {homeLabel.setForeground(new Color(173, 216, 230));}
+            });
+            exitLabel.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {System.exit(0);}
+                public void mouseEntered(MouseEvent e) {exitLabel.setForeground(Color.WHITE);}
+                public void mouseExited(MouseEvent e) {exitLabel.setForeground(new Color(173, 216, 230));}
+            });
         }
         private void initGridPanel() {
             gridPanel = new JPanel();
@@ -335,7 +368,17 @@ import controller.RowMananger;
                 y += 25;
             }
         }
-
+        private void initScorePanel() {
+            JPanel scorePanel = new JPanel();
+            scorePanel.setBounds(272, 10, 120, 35);
+            scorePanel.setOpaque(false);
+            scorePanel.setBorder(new LineBorder(new Color(173, 216, 230), 2));
+            scoreLabel = new JLabel("Score: 0");
+            scoreLabel.setFont(getPixelFont().deriveFont(14f));
+            scoreLabel.setForeground(new Color(173, 216, 230));
+            scorePanel.add(scoreLabel);
+            gamePanel.add(scorePanel);
+        }
         private void initLevelPanel() {
             JPanel levelPanel = new JPanel();
             levelPanel.setBounds(272, 49, 120, 35);
@@ -372,7 +415,6 @@ import controller.RowMananger;
                 queuePicLabels[i].setBounds(10, 22 + (i * 60), 100, 25); 
                 queuePanel.add(queuePicLabels[i]);
             }
-//            updateQueue();
         }
         private void initHoldPanel() {
             JLabel holdLabel = new JLabel("Hold Block (H)");
@@ -401,7 +443,6 @@ import controller.RowMananger;
             scorePanel_2.setLayout(new BoxLayout(scorePanel_2, BoxLayout.Y_AXIS));
 
             scoreLabel_2.setAlignmentX(Component.CENTER_ALIGNMENT); 
-
             scorePanel_2.setAlignmentX(Component.CENTER_ALIGNMENT);
             scorePanel_2.setAlignmentY(Component.CENTER_ALIGNMENT); 
             
@@ -409,16 +450,9 @@ import controller.RowMananger;
                 public void mouseClicked(MouseEvent e) {
                 	VolumeDialog volumeDialog = new VolumeDialog(jframe);
                     volumeDialog.setVisible(true);
-                    
                 }
-
-                public void mouseEntered(MouseEvent e) {
-                	scoreLabel_2.setForeground(Color.WHITE);
-                }
-
-                public void mouseExited(MouseEvent e) {
-                	scoreLabel_2.setForeground(new Color(173, 216, 230));
-                }
+                public void mouseEntered(MouseEvent e) {scoreLabel_2.setForeground(Color.WHITE);}
+                public void mouseExited(MouseEvent e) {scoreLabel_2.setForeground(new Color(173, 216, 230));}
             });
             scorePanel_3 = new JPanel();
             scorePanel_3.setOpaque(false);
@@ -433,24 +467,13 @@ import controller.RowMananger;
             scorePanel_3.setLayout(new BoxLayout(scorePanel_3, BoxLayout.Y_AXIS));
 
             scoreLabel_3.setAlignmentX(Component.CENTER_ALIGNMENT); 
-
             scorePanel_3.setAlignmentX(Component.CENTER_ALIGNMENT);
-            scorePanel_3.setAlignmentY(Component.CENTER_ALIGNMENT);
-            
+            scorePanel_3.setAlignmentY(Component.CENTER_ALIGNMENT);  
             scoreLabel_3.addMouseListener(new MouseAdapter() {
-                public void mouseClicked(MouseEvent e) {
-                    System.exit(0);
-                }
-
-                public void mouseEntered(MouseEvent e) {
-                	scoreLabel_3.setForeground(Color.WHITE);
-                }
-
-                public void mouseExited(MouseEvent e) {
-                	scoreLabel_3.setForeground(new Color(173, 216, 230));
-                }
+                public void mouseClicked(MouseEvent e) {System.exit(0);}
+                public void mouseEntered(MouseEvent e) {scoreLabel_3.setForeground(Color.WHITE);}
+                public void mouseExited(MouseEvent e) {scoreLabel_3.setForeground(new Color(173, 216, 230));}
             });
-          
         }
         private void initPausePanel() {
             pauseCoverPanel = new JPanel();
@@ -480,7 +503,6 @@ import controller.RowMananger;
             pauseLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
             pauseLabel.setAlignmentY(Component.CENTER_ALIGNMENT);
 
-
             gamePanel.add(pausePanel);
             JLabel homeLabel = new JLabel("Home");
             homeLabel.setForeground(new Color(173, 216, 230));
@@ -501,37 +523,20 @@ import controller.RowMananger;
                         new String[]{"Continue", "Exit to Main Menu"},
                         "Continue"
                     );
-
                     if (option == JOptionPane.NO_OPTION) {
                         gamePanel.setVisible(false);
                         startPanel.setVisible(true);
                         pauseCoverPanel.setVisible(false);
                         game.resetGame();
-                    } else {
-                        pauseGame(); 
-                    }
+                    } else pauseGame(); 
                 }
-
-                public void mouseEntered(MouseEvent e) {
-                    homeLabel.setForeground(Color.WHITE);
-                }
-
-                public void mouseExited(MouseEvent e) {
-                    homeLabel.setForeground(new Color(173, 216, 230));
-                }
+                public void mouseEntered(MouseEvent e) {homeLabel.setForeground(Color.WHITE);}
+                public void mouseExited(MouseEvent e) {homeLabel.setForeground(new Color(173, 216, 230));}
             });
             pausePanel.addMouseListener(new MouseAdapter() {
-                public void mouseClicked(MouseEvent e) {
-                    pauseGame();
-                }
-
-                public void mouseEntered(MouseEvent e) {
-                    pauseLabel.setForeground(Color.WHITE);
-                }
-
-                public void mouseExited(MouseEvent e) {
-                    pauseLabel.setForeground(new Color(173, 216, 230));
-                }
+                public void mouseClicked(MouseEvent e) {pauseGame();}
+                public void mouseEntered(MouseEvent e) {pauseLabel.setForeground(Color.WHITE);}
+                public void mouseExited(MouseEvent e) {pauseLabel.setForeground(new Color(173, 216, 230));}
             });
         }
         private void initGameOverMessage() {
@@ -616,156 +621,60 @@ import controller.RowMananger;
                         gameOverPanel.setVisible(false);
                         startPanel.setVisible(true);
                         game.resetGame();
-                    
                 }
-
-                public void mouseEntered(MouseEvent e) {
-                    homeLabel1.setForeground(Color.WHITE);
-                }
-
-                public void mouseExited(MouseEvent e) {
-                    homeLabel1.setForeground(new Color(173, 216, 230));
-                }
+                public void mouseEntered(MouseEvent e) {homeLabel1.setForeground(Color.WHITE);}
+                public void mouseExited(MouseEvent e) {homeLabel1.setForeground(new Color(173, 216, 230));}
             });
             homeLabel2.addMouseListener(new MouseAdapter() {
                 public void mouseClicked(MouseEvent e) {
                 	 winGamePanel.setVisible(false);
                         startPanel.setVisible(true);
                         game.resetGame();
-                    
                 }
-
-                public void mouseEntered(MouseEvent e) {
-                    homeLabel2.setForeground(Color.WHITE);
-                }
-
-                public void mouseExited(MouseEvent e) {
-                    homeLabel2.setForeground(new Color(173, 216, 230));
-                }
+                public void mouseEntered(MouseEvent e) {homeLabel2.setForeground(Color.WHITE);}
+                public void mouseExited(MouseEvent e) {homeLabel2.setForeground(new Color(173, 216, 230));}
             });
             playAgainLabel.addMouseListener(new MouseAdapter() {
-                public void mouseClicked(MouseEvent e) {
-                    resetGame();
-                }
-
-                public void mouseEntered(MouseEvent e) {
-                    playAgainLabel.setForeground(Color.WHITE);
-                }
-
-                public void mouseExited(MouseEvent e) {
-                    playAgainLabel.setForeground(new Color(173, 216, 230));
-                }
-                
+                public void mouseClicked(MouseEvent e) {resetGame();}
+                public void mouseEntered(MouseEvent e) {playAgainLabel.setForeground(Color.WHITE);}
+                public void mouseExited(MouseEvent e) {playAgainLabel.setForeground(new Color(173, 216, 230));}
             });
-
             exit.addMouseListener(new MouseAdapter() {
-                public void mouseClicked(MouseEvent e) {
-                    System.exit(0);
-                }
-
-                public void mouseEntered(MouseEvent e) {
-                	exit.setForeground(Color.WHITE);
-                }
-
-                public void mouseExited(MouseEvent e) {
-                	exit.setForeground(new Color(173, 216, 230));
-                }
+                public void mouseClicked(MouseEvent e) {System.exit(0);}
+                public void mouseEntered(MouseEvent e) {exit.setForeground(Color.WHITE);}
+                public void mouseExited(MouseEvent e) {exit.setForeground(new Color(173, 216, 230));}
             });
             exit1.addMouseListener(new MouseAdapter() {
-                public void mouseClicked(MouseEvent e) {
-                    System.exit(0);
-                }
-
-                public void mouseEntered(MouseEvent e) {
-                	exit1.setForeground(Color.WHITE);
-                }
-
-                public void mouseExited(MouseEvent e) {
-                	exit1.setForeground(new Color(173, 216, 230));
-                }
+                public void mouseClicked(MouseEvent e) {System.exit(0);}
+                public void mouseEntered(MouseEvent e) {exit1.setForeground(Color.WHITE);}
+                public void mouseExited(MouseEvent e) {exit1.setForeground(new Color(173, 216, 230));}
             });
             gameOverPanel.setVisible(false);
             jframe.getContentPane().add(gameOverPanel);
         }
-        public void updateQueue() {
-            SwingUtilities.invokeLater(() -> {
-                for (int i = 0; i < 3; i++) {
-                    int blockType = game.getBlockQueue()[i];
-                    ImageIcon icon = ImageManager.getBlockIcon(blockType);
-                    switch (blockType) {
-                        case 0 -> queuePicLabels[i].setBounds(10, 22 + (i * 60), 100, 25);
-                        case 1, 2, 4, 5, 6 -> queuePicLabels[i].setBounds(22, 10 + (i * 60), 75, 50);
-                        case 3 -> queuePicLabels[i].setBounds(35, 10 + (i * 60), 50, 50);
-                    }
-                    queuePicLabels[i].setIcon(icon);
-                }
-            });
+       
+        private void showLevelSelectDialog() {
+            LevelSelectDialog levelSelectDialog = new LevelSelectDialog(jframe, this);
+            levelSelectDialog.setVisible(true);
         }
-     
-        private void updateHoldImage() {
-        	ImageManager.updateHoldImage(holdImgLabel, game);
-        }
-        private void updateScoreLabel() {
-            ScoreManager.updateScoreLabel(scoreLabel, game);
-        }
-        private void updateLevelLabel() {
-            ScoreManager.updateLevelLabel(levelLabel, game);
-            replaceBackgroundLabel();
-        }
-        private void updateLinesLabel() {
-            ScoreManager.updateLinesLabel(linesLabel, game);
-        }
-        private void updateCurrentBlock(boolean isNewBlock) {
+        public void updateCurrentBlock(boolean isNewBlock) {
             ImageManager.updateCurrentBlock(gameGrid, game, isNewBlock);
+            if (isNewBlock) updateLevelLabel(); 
         }
-        private final KeyListener keyListener = new KeyAdapter() {
-            public void keyPressed(KeyEvent e) {
-                if (e.getKeyCode() == 37) {
-                    game.moveSide(0);
-                    updateCurrentBlock(false);
-                } else if (e.getKeyCode() == 39) {
-                    game.moveSide(1);
-                    updateCurrentBlock(false);
-                } else if (e.getKeyCode() == 40) {
-                    game.setFastFall(true);
-                } else if (e.getKeyCode() == 38) {
-                    game.rotateBlock();
-                    updateCurrentBlock(false);
-                } else if (e.getKeyCode() == 72) {
-                    holdBlock();
-                } else if (e.getKeyCode() == 80) {
-                    pauseGame();
-                } else if (e.getKeyCode() == KeyEvent.VK_SPACE) {
-                    moveBlockDownFast();
-                }
-            }
-
-            public void keyReleased(KeyEvent e) {
-                if (e.getKeyCode() == 40 || e.getKeyCode() == 83) {
-                    game.setFastFall(false);
-                }
-            }
-        };
-
-        private void moveBlockDownFast() {
+        public void moveBlockDownFast() {
             while (!game.isTouchingBottomOrBlock()) {
                 game.updatePreviousBlockPos();
                 game.moveBlockDown();
                 updateCurrentBlock(false);
             }
         }
-   
         private void animateTitleLabel() {
             titleLabelThread = new Thread(() -> {
                 int count = 0;
                 while (animateTitle) {
-                    if (count < 5) {
-                        titleLabel.setLocation(titleLabel.getX(), titleLabel.getY() + 1);
-                    } else if (count < 9) {
-                        titleLabel.setLocation(titleLabel.getX(), titleLabel.getY() - 1);
-                    } else {
-                        count = 0;
-                    }
+                    if (count < 5) titleLabel.setLocation(titleLabel.getX(), titleLabel.getY() + 1);
+                    else if (count < 9) titleLabel.setLocation(titleLabel.getX(), titleLabel.getY() - 1);
+                    else count = 0;
                     try {
                         Thread.sleep(100);
                     } catch (InterruptedException ignored) {}
@@ -775,98 +684,10 @@ import controller.RowMananger;
             titleLabelThread.start();
         }
         private void gravity() {
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException ignored) {}
-            blockGravityThread = new Thread(() -> {
-                while (game.isRunning()) {
-                    if (!game.isTouchingBottomOrBlock()) {
-                        game.updatePreviousBlockPos();
-                        game.moveBlockDown();
-                        updateCurrentBlock(false);
-                        try {
-                            for (int i = 0; i < game.getFallDelay()/50 && !game.isFastFall(); i++) {
-                                Thread.sleep(50);
-                            }
-                            if (game.isFastFall()) {
-                                Thread.sleep(50);
-                            }
-                        } catch (InterruptedException ignored) {
-                        }
-                    } else {
-                        game.addCurrentToSetBlock();
-                        removeRows(game.checkForFullRows());
-                        updateScoreLabel();
-                        updateLevelLabel();
-                        updateLinesLabel();
-                        initFrameBackground();
-                        if (game.getLevel() >= MAX_LEVEL) { 
-                            blockGravityThread.interrupt(); 
-                            showWinGamePanel();
-                            break;}
-                        else if (!game.checkIfGameOver()) {
-                            game.nextBlock();
-                            game.setHeldThisTurn(false);
-                            updateQueue();
-                            updateCurrentBlock(true);
-                        } else {
-                            blockGravityThread.interrupt();
-                            gameOverAnimation();
-                            game.checkIfHighScore();
-                            showGameOverMessage();
-                        }
-                    }
-                }
-            });
-            blockGravityThread.start();
+            gameThread = new gravity(this);
+            gameThread.startGame();
         }
-        private void showGameOverMessage() {
-            gamePanel.setVisible(false);
-            gameOverPanel.setVisible(true);
-            gameOverScoreLabel.setText("Score: " + game.getScore());
-            highScoreLabel.setText("High Score: " + game.getHighScoreFromFile());
-            String name = JOptionPane.showInputDialog(jframe, "Enter your name:", "Game Over", JOptionPane.PLAIN_MESSAGE);
-            if (name != null && !name.isEmpty()) {
-                ScoreView.saveScore(name, game.getScore());
-            }
-
-        }
-        private void showWinGamePanel() {
-            gamePanel.setVisible(false);
-            finalScoreLabel1.setText("Final Score: " + game.getScore());
-            winGamePanel.add(finalScoreLabel1);            
-            winGamePanel.setVisible(true);
-            String name = JOptionPane.showInputDialog(jframe, "Enter your name:", "Game Won", JOptionPane.PLAIN_MESSAGE);
-            if (name != null && !name.isEmpty()) {
-                ScoreView.saveScore(name, game.getScore());
-            }
-            JOptionPane.showMessageDialog(jframe, "Congratulations! You've reached the maximum score of " + MAX_LEVEL + "!");
-        }
-        public void gameOverAnimation() {
-            for (int i = 0; i < 20; i++) {
-                for (int j = 0; j < 10; j++) {
-                    if (gameGrid[j][i].getBackground() != Color.WHITE) {
-                        int green = ThreadLocalRandom.current().nextInt(150, 251);
-                        int blue = ThreadLocalRandom.current().nextInt(85, 186);
-                        gameGrid[j][i].setBackground(new Color(250, green, blue));
-                        try {
-                            Thread.sleep(25);
-                        } catch (InterruptedException ignored) {}
-                        gameGrid[j][i].setBackground(Color.WHITE);
-                        gameGrid[j][i].setBorder(null);
-                        gameGrid[j][i].setOpaque(false);
-                    }
-                }
-            }
-        }
-
-        public Font getPixelFont() {
-            return pixelFont;
-        }
-        private void removeRows(ArrayList<Integer> rowsToRemove) {
-            RowMananger.removeRows(gameGrid, game, rowsToRemove);
-        }
-        private void holdBlock() {
+        public void holdBlock() {
             if (!game.isHeldThisTurn()) {
                 if (game.getCurrentHoldBlock() != -1) {
                     for (int i = 0; i < 4; i++) {
@@ -895,10 +716,10 @@ import controller.RowMananger;
                 game.setHeldThisTurn(true);
             }
         }
-        private void pauseGame() {
+        public void pauseGame() {
             if (game.isRunning()) {
                 game.setRunning(false);
-                blockGravityThread.interrupt();
+                gameThread.stopGame();
                 pauseCoverPanel.setVisible(true);
             } else {
                 game.setRunning(true);
@@ -915,6 +736,47 @@ import controller.RowMananger;
             updateScoreLabel();
             updateLinesLabel();
             updateLevelLabel();
+            game.setLevel(currentLevel);
             gravity();
         }
-    }
+        public void startGameWithLevel(int level) {
+            animateTitle = false;
+            titleLabelThread.interrupt();
+            startPanel.setVisible(false);
+            gamePanel.setVisible(true);
+            resetAllComponents();
+            game.setLevel(level); 
+            currentLevel = level;
+            game.updateFallDelay(); 
+            game.startGame();
+            updateQueue();
+            updateCurrentBlock(true); 
+            gravity(); 
+        }  
+        public logic getGame() {return game;}
+        private void updateHoldImage() {ImageManager.updateHoldImage(holdImgLabel, game);}
+        public void updateScoreLabel() {ScoreManager.updateScoreLabel(scoreLabel, game);}
+        public void updateLevelLabel() {ScoreManager.updateLevelLabel(levelLabel, game);}
+        public void updateLinesLabel() {ScoreManager.updateLinesLabel(linesLabel, game);}
+        public void setSelectMode(boolean selectMode) {this.isSelectMode = selectMode;}
+        public Font getPixelFont() {return pixelFont;}
+        public void removeRows(ArrayList<Integer> rowsToRemove) {RowMananger.removeRows(gameGrid, game, rowsToRemove);}      
+        public void resetGameState() {resetAllComponents();}
+        public void gameOverAnimation() {gameOverAnimationManager.gameOverAnimation();}
+        private void resetAllComponents() {gameStateManager.resetAllComponents();}
+        public void updateQueue() {gameStateManager.updateQueue();}
+        public void showGameOverMessage() {gameOverViewManager.showGameOverMessage();}
+        public void showWinGamePanel() {gameOverViewManager.showWinGamePanel();}
+        public void showSelectOverPanel() {gameOverViewManager.showSelectOverPanel();}
+        public JPanel getselectOverPanel() {return selectOverPanel;}
+        public JPanel getgamePanel() {return gamePanel;}
+        public JPanel getgameOverPanel() {return  gameOverPanel;}
+        public JPanel getwinGamePanel() {return winGamePanel;}
+        public JLabel  getfinalScoreLabel1(){return finalScoreLabel1;}
+        public JLabel getfinalScoreLabel3() {return finalScoreLabel3;}
+        public JLabel getfinalScoreLabel2() {return finalScoreLabel2;}
+        public JLabel getgameOverScoreLabel() {return gameOverScoreLabel;}
+        public JLabel gethighScoreLabel() {return highScoreLabel;}
+        public JFrame getjframe() {return jframe;}
+		public boolean isSelectMode() {return true;}
+    }   

@@ -21,31 +21,13 @@ public class ImageManager {
     public static ImageIcon sBlockIcon;
     public static ImageIcon tBlockIcon;
     public static ImageIcon zBlockIcon;
-    public static ImageIcon getIBlockIcon() {
-        return iBlockIcon;
-    }
-
-    public static ImageIcon getJBlockIcon() {
-        return jBlockIcon;
-    }
-    public static ImageIcon getLBlockIcon() {
-        return iBlockIcon;
-    }
-
-    public static ImageIcon getOBlockIcon() {
-        return jBlockIcon;
-    }
-    public static ImageIcon getSBlockIcon() {
-        return iBlockIcon;
-    }
-
-    public static ImageIcon getTBlockIcon() {
-        return jBlockIcon;
-    }
-    public static ImageIcon getZBlockIcon() {
-        return iBlockIcon;
-    }
-
+    public static ImageIcon getIBlockIcon() {return iBlockIcon;}
+    public static ImageIcon getJBlockIcon() {return jBlockIcon;}
+    public static ImageIcon getLBlockIcon() {return iBlockIcon;}
+    public static ImageIcon getOBlockIcon() {return jBlockIcon;}
+    public static ImageIcon getSBlockIcon() {return iBlockIcon;}
+    public static ImageIcon getTBlockIcon() {return jBlockIcon;}
+    public static ImageIcon getZBlockIcon() {return iBlockIcon;}
 
     public static void initImageIcons() {
         try {
@@ -60,7 +42,6 @@ public class ImageManager {
             e.printStackTrace();
         }
     }
-
     public static ImageIcon getBlockIcon(int blockType) {
         return switch (blockType) {
             case 0 -> iBlockIcon;
@@ -73,20 +54,6 @@ public class ImageManager {
             default -> null;
         };
     }
-//    public static void initImageIcons() {
-//        try {
-//            iBlockIcon = new ImageIcon(ImageIO.read(new File("design/IBlock.png")));
-//            jBlockIcon = new ImageIcon(ImageIO.read(new File("design/JBlock.png")));
-//            lBlockIcon = new ImageIcon(ImageIO.read(new File("design/LBlock.png")));
-//            oBlockIcon = new ImageIcon(ImageIO.read(new File("design/OBlock.png")));
-//            sBlockIcon = new ImageIcon(ImageIO.read(new File("design/SBlock.png")));
-//            tBlockIcon = new ImageIcon(ImageIO.read(new File("design/TBlock.png")));
-//            zBlockIcon = new ImageIcon(ImageIO.read(new File("design/ZBlock.png")));
-//            } catch (IOException e) {
-//            e.printStackTrace();
-//            }
-//            
-//    }
     public static void updateHoldImage(JLabel holdImgLabel, logic game) {
         if (game.getCurrentHoldBlock() != -1) {
             ImageIcon icon = switch (game.getCurrentHoldBlock()) {
@@ -104,7 +71,6 @@ public class ImageManager {
             holdImgLabel.setIcon(null);
         }
     }
-
     public static void updateCurrentBlock(JPanel[][] gameGrid, logic game, boolean isNewBlock) {
         if (!isNewBlock) {
             for (int i = 0; i < 4; i++) {
