@@ -12,7 +12,7 @@ import model.block;
 public class logic {
 
     private block currentBlock;
-    private int[] blockQueue;
+//    private int[] blockQueue;
     private final int[][] previousBlockPos;
     private int fallDelay = 500;
     private int currentHoldBlock = -1;
@@ -26,19 +26,18 @@ public class logic {
     private boolean running = false;
     private final ArrayList<int[]> setBlocks;
 	private BufferedReader bufferedReader;
-	private int remainingSeconds;
+	private BlockQueue blockQueue;
     public logic() {
-        initBlockQueue();
+    	blockQueue = new BlockQueue();
         setBlocks = new ArrayList<>();
         previousBlockPos = new int[4][2];
     }
     public void startGame() {
-        fallDelay = 500;
         running = true;
+        updateFallDelay();
         nextBlock();
     }
     public void resetGame() {
-        fallDelay = 500;
         currentHoldBlock = -1;
         score = 0;
         level = 0;
@@ -46,23 +45,12 @@ public class logic {
         requiredLineClears = 10;
         totalLines = 0;
         heldThisTurn = false;
-        initBlockQueue();
+        blockQueue.initBlockQueue();
         setBlocks.clear();
         startGame();
     }
-    private void initBlockQueue() {
-        blockQueue = new int[3];
-        for (int i = 0 ; i < 3; i++) 
-            blockQueue[i] = ThreadLocalRandom.current().nextInt(0, 7);
-    }
-    public void shuffleAndAddToQueue() {
-        blockQueue[0] = blockQueue[1];
-        blockQueue[1] = blockQueue[2];
-        blockQueue[2] = ThreadLocalRandom.current().nextInt(0, 7);
-    }
     public void nextBlock() {
-        currentBlock = new block(blockQueue[0]);
-        shuffleAndAddToQueue();
+        currentBlock = new block(blockQueue.getNextBlock());
     }
     public void updatePreviousBlockPos() {
         for (int i = 0; i < 4; i++) 
@@ -122,6 +110,16 @@ public class logic {
             fallDelay -= 10;
         }
         requiredLineClears = (level + 1) * 10;
+    }
+
+    public void updateFallDelay() {
+        if (level < 10) {
+            fallDelay = 500 - (level * 50);
+        } else if (level == 10) {
+            fallDelay = 40;
+        } else {
+            fallDelay = 10;
+        }
     }
     public boolean checkIfGameOver() {
         for (int i = 0; i < 4; i++) {
@@ -410,7 +408,7 @@ public class logic {
     public int getFallDelay() {return fallDelay;}
     public boolean isFastFall() {return fastFall;}
     public boolean isRunning() {return running;}
-    public int[] getBlockQueue() {return blockQueue;}
+    public int[] getBlockQueue() {return blockQueue.getBlockQueue();}
     public int getScore() {return score;}
     public int getLevel() {return level;}
     public int getTotalLines() {return totalLines;}
@@ -425,9 +423,4 @@ public class logic {
     public void removeFromSetBlocks(int index) {setBlocks.remove(index);}
     public void clearSetBlocks() {setBlocks.clear();}
     public void setLevel(int level) {this.level = level;}
-    public void updateFallDelay() {fallDelay = (int) (1000 * Math.pow(0.8, level - 1));}
-//    public void setLevelAndUpdateFallDelay(int newLevel) {
-//        level = newLevel;
-//        updateFallDelay();
-//    }
 }

@@ -28,7 +28,7 @@ public class LevelSelectDialog extends JDialog {
         setSize(300, 400);
         setResizable(false);
         setLocationRelativeTo(owner);
-        JLabel backgroundLabel = new JLabel(new ImageIcon("design/background-1.jpg"));
+        JLabel backgroundLabel = new JLabel(new ImageIcon("design/background-4.jpg"));
         backgroundLabel.setLayout(new BorderLayout());
         levelPanel = new JPanel();
         levelPanel.setLayout(new GridLayout(4, 3, 10, 10)); 
@@ -57,4 +57,5 @@ public class LevelSelectDialog extends JDialog {
         backgroundLabel.add(levelPanel, BorderLayout.CENTER);
         add(backgroundLabel);     
     }
+
 }

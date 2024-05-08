@@ -7,3 +7,4 @@ vietnamese|1300
 hưng|0
 over|500
 70|70000
+gggggggggg|0

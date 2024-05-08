@@ -7,7 +7,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
-import view.ImageManager;
+import model.ImageManager;
 
 public class GameStateManager {
     private JPanel[][] gameGrid;

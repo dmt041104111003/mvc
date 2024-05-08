@@ -5,7 +5,6 @@ import view.frame;
 public class gravity extends Thread {
     private final frame gameFrame;
     private boolean isRunning;
-
     public gravity(frame gameFrame) {
         this.gameFrame = gameFrame;
         this.isRunning = false;
@@ -33,6 +32,7 @@ public class gravity extends Thread {
             } else {
                 gameFrame.getGame().addCurrentToSetBlock();
                 gameFrame.removeRows(gameFrame.getGame().checkForFullRows());
+                
                 gameFrame.updateScoreLabel();
                 gameFrame.updateLevelLabel();
                 gameFrame.updateLinesLabel();

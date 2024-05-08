@@ -31,6 +31,7 @@ import controller.ScoreManager;
 import controller.Sound;
 import controller.gravity;
 import controller.logic;
+import model.ImageManager;
 public class frame {
         private JFrame jframe;
         private JPanel startPanel;
@@ -61,12 +62,13 @@ public class frame {
         private JPanel selectOverPanel;
         private JLabel selectOverLabel;
         private JLabel finalScoreLabel2;
-        private static final String INITIAL_BACKGROUND_IMAGE_PATH = "design/background-1.jpg";
+        private static final String INITIAL_BACKGROUND_IMAGE_PATH = "design/background-4.jpg";
         private String currentBackgroundImagePath;
         private boolean isSelectMode = false; 
         private Thread titleLabelThread;
         private boolean animateTitle = true;
         private final logic game;
+//        private final GameState getState;
 		private JLabel high_score;
 		private JLabel howtoplaygame;
 		private int highestScore;
@@ -711,7 +713,7 @@ public class frame {
                     }
                     game.nextBlock();
                     updateCurrentBlock(true);
-                    game.shuffleAndAddToQueue();
+//                    game.shuffleAndAddToQueue();
                     updateQueue();
                 }
                 game.setHeldThisTurn(true);
@@ -748,13 +750,13 @@ public class frame {
             resetAllComponents();
             game.setLevel(level); 
             currentLevel = level;
-            game.updateFallDelay(); 
             game.startGame();
             updateQueue();
             updateCurrentBlock(true); 
             gravity(); 
         }  
         public logic getGame() {return game;}
+//        public GameState getState() {return getState;}
         private void updateHoldImage() {ImageManager.updateHoldImage(holdImgLabel, game);}
         public void updateScoreLabel() {ScoreManager.updateScoreLabel(scoreLabel, game);}
         public void updateLevelLabel() {ScoreManager.updateLevelLabel(levelLabel, game);}
