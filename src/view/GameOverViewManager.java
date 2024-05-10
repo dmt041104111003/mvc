@@ -22,7 +22,7 @@ public class GameOverViewManager {
     	    score.saveUserToDatabase(name, game.getScore());
 
         }
-        
+         
     }
 
     public void showWinGamePanel() {
