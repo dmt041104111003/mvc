@@ -26,11 +26,12 @@ public class GameRules {
 
     public static int calculateFallDelay(int level) {
         if (level < 10) {
-            return 500 - (level * 50);
+            return 1000 - (level * 100);
         } else if (level == 10) {
             return 40;
         } else {
             return 10;
         }
     }
+
 }

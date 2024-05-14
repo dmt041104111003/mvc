@@ -10,6 +10,9 @@ import javax.swing.border.LineBorder;
 
 
 public class RowMananger {
+    private JPanel[][] gameGrid;
+	private logic game;
+
     public static void removeRows(JPanel[][] gameGrid, logic game, ArrayList<Integer> rowsToRemove) {
         int removedRowCount = 0;
         for (Integer i : rowsToRemove) {
@@ -74,5 +77,8 @@ public class RowMananger {
                 }
             }
         }
-    }
+        
+    } 
+    public void removeRows(ArrayList<Integer> rowsToRemove) {RowMananger.removeRows(gameGrid, game, rowsToRemove);}      
+
 }

@@ -9,7 +9,10 @@ public class KeyboardEventHandler {
         this.game = game;
         this.mainFrame = mainFrame;
     }
+    
     public void handleKeyEvent(KeyEvent e) {
+    	   if (game.isGameOver())  return;
+    	    
         int keyCode = e.getKeyCode();
         switch (keyCode) {
             case KeyEvent.VK_LEFT:game.moveSide(0);mainFrame.updateCurrentBlock(false);break;

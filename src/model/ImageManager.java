@@ -72,7 +72,9 @@ public class ImageManager {
        }
    }
    public static void updateCurrentBlock(JPanel[][] gameGrid, logic game, boolean isNewBlock) {
-       if (!isNewBlock) {
+       
+	   
+	   if (!isNewBlock) {
            for (int i = 0; i < 4; i++) {
                gameGrid[game.getPreviousBlockPos()[i][0]][game.getPreviousBlockPos()[i][1]].setBackground(Color.WHITE);
                gameGrid[game.getPreviousBlockPos()[i][0]][game.getPreviousBlockPos()[i][1]].setBorder(null);
@@ -82,8 +84,9 @@ public class ImageManager {
        for (int i = 0; i < 4; i++) {
            gameGrid[game.getCurrentBlockPos()[i][0]][game.getCurrentBlockPos()[i][1]].setOpaque(true);
            gameGrid[game.getCurrentBlockPos()[i][0]][game.getCurrentBlockPos()[i][1]].setBackground(game.getCurrentBlockColor());
-           gameGrid[game.getCurrentBlockPos()[i][0]][game.getCurrentBlockPos()[i][1]].setBorder(new LineBorder(Color.BLACK));
+           gameGrid[game.getCurrentBlockPos()[i][0]][game.getCurrentBlockPos()[i][1]].setBorder(new LineBorder(new Color(173, 216, 230)));
        }
        
    }
+   
 }

@@ -13,22 +13,21 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
-import controller.logic;
+//import controller.logic;
 public class LevelSelectDialog extends JDialog {
 	private static final long serialVersionUID = 1L;
     private final frame parent;
     private final JPanel levelPanel;
     private final JLabel[] levelLabels;
-    private final logic game;
 
     public LevelSelectDialog(JFrame owner, frame parent) {
         super(owner, "Select Level", true);
         this.parent = parent;
-        this.game = parent.getGame(); 
         setSize(300, 400);
         setResizable(false);
         setLocationRelativeTo(owner);
-        JLabel backgroundLabel = new JLabel(new ImageIcon("design/background-4.jpg"));
+        String backgroundImagePath = parent.getCurrentBackgroundImagePath();
+        JLabel backgroundLabel = new JLabel(new ImageIcon(backgroundImagePath));
         backgroundLabel.setLayout(new BorderLayout());
         levelPanel = new JPanel();
         levelPanel.setLayout(new GridLayout(4, 3, 10, 10)); 

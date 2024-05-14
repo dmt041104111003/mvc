@@ -7,6 +7,7 @@ import controller.score;
 public class GameOverViewManager {
     private frame mainFrame;
     private logic game;
+    
     public GameOverViewManager(frame mainFrame, logic game) {
         this.mainFrame = mainFrame;
         this.game = game;

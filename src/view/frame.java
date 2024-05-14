@@ -4,11 +4,13 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.FontFormatException;
+import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -31,7 +33,9 @@ import controller.ScoreManager;
 import controller.Sound;
 import controller.gravity;
 import controller.logic;
+import model.GhostBlockRenderer;
 import model.ImageManager;
+import model.block;
 public class frame {
         private JFrame jframe;
         private JPanel startPanel;
@@ -62,13 +66,14 @@ public class frame {
         private JPanel selectOverPanel;
         private JLabel selectOverLabel;
         private JLabel finalScoreLabel2;
-        private static final String INITIAL_BACKGROUND_IMAGE_PATH = "design/background-4.jpg";
-        private String currentBackgroundImagePath;
+        private static final String INITIAL_BACKGROUND_IMAGE_PATH = "design/e.jpg";
+        private String currentBackgroundImagePath = INITIAL_BACKGROUND_IMAGE_PATH;
+        
         private boolean isSelectMode = false; 
         private Thread titleLabelThread;
         private boolean animateTitle = true;
         private final logic game;
-//        private final GameState getState;
+        private GhostBlockRenderer ghostBlockRenderer;
 		private JLabel high_score;
 		private JLabel howtoplaygame;
 		private int highestScore;
@@ -105,6 +110,7 @@ public class frame {
             gameStateManager = new GameStateManager(gameGrid, holdImgLabel, scoreLabel, levelLabel, linesLabel, queuePicLabels, game);
             initFrameBackground();
             initKeyboardEventHandler();
+            ghostBlockRenderer = new GhostBlockRenderer(newGame);
             jframe.setVisible(true);
         }
         private void frame_tetris() {
@@ -154,13 +160,19 @@ public class frame {
                 currentBackgroundIndex = (currentBackgroundIndex + 1) % backgroundImagePaths.size();
                 currentBackgroundImagePath = backgroundImagePaths.get(currentBackgroundIndex);
                 initFrameBackground();
-            } catch (Exception e) {e.printStackTrace();}
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
         private List<String> backgroundImagePaths = Arrays.asList(
-        	    "design/background-1.jpg",
-        	    "design/background-2.jpg",
-        	    "design/background-3.png",
-        	    "design/background-4.jpg"
+        	    "design/a.jpg",
+        	    "design/b.jpg",
+        	    "design/c.jpg",
+        	    "design/d.jpg",
+        	    "design/e.jpg",
+        	    "design/f.jpg",
+        	    "design/g.jpg",
+        	    "design/h.jpg"
         );
         private void initStartPanel() {
             startPanel = new JPanel();
@@ -173,7 +185,7 @@ public class frame {
             titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
             titleLabel.setFont(pixelFont.deriveFont(55f));
             startPanel.add(titleLabel);
-            animateTitleLabel();
+            animateLabel(titleLabel);
 
             JLabel startGameLabel = new JLabel("Start");
             startGameLabel.setForeground(new Color(173, 216, 230));
@@ -222,7 +234,7 @@ public class frame {
             startGameLabel.addMouseListener(new MouseAdapter() {
                 public void mouseClicked(MouseEvent e) {
                     animateTitle = false;
-                    titleLabelThread.interrupt();
+//                    titleLabelThread.interrupt();
                     startPanel.setVisible(false);
                     gamePanel.setVisible(true);
                     resetAllComponents();
@@ -293,7 +305,7 @@ public class frame {
             selectOverLabel.setForeground(new Color(173, 216, 230));
             selectOverLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
             selectOverPanel.add(selectOverLabel);
-
+            animateLabel(selectOverLabel);
             finalScoreLabel2 = new JLabel("Final Score: " + game.getScore());
             finalScoreLabel2.setFont(pixelFont.deriveFont(25f));
             finalScoreLabel2.setForeground(new Color(173, 216, 230));
@@ -324,6 +336,7 @@ public class frame {
             playAgainLabel.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
+                	 animateTitle = true;
                 	 selectOverPanel.setVisible(false);
                 	 startGameWithLevel(currentLevel);
                 }
@@ -347,14 +360,16 @@ public class frame {
                 public void mouseExited(MouseEvent e) {exitLabel.setForeground(new Color(173, 216, 230));}
             });
         }
+
         private void initGridPanel() {
-            gridPanel = new JPanel();
+            gridPanel = new GridPanel();
             gridPanel.setBounds(10, 10, 252, 502);
             gridPanel.setBorder(new LineBorder(new Color(173, 216, 230), 2));
-            gridPanel.setOpaque(false);
+            gridPanel.setOpaque(false); 
             gridPanel.setLayout(null);
             gamePanel.add(gridPanel);
         }
+
         private void initGameGrid() {
             gameGrid = new JPanel[10][20];
             int y = 1;
@@ -363,14 +378,15 @@ public class frame {
                 for (int j = 0; j < 10; j++) {
                     gameGrid[j][i] = new JPanel();
                     gameGrid[j][i].setBounds(x, y, 25, 25);
-                    gameGrid[j][i].setBackground(Color.WHITE);
-                    gameGrid[j][i].setOpaque(false);
+                    gameGrid[j][i].setOpaque(false); 
                     gridPanel.add(gameGrid[j][i]);
                     x += 25;
                 }
                 y += 25;
             }
         }
+
+        
         private void initScorePanel() {
             JPanel scorePanel = new JPanel();
             scorePanel.setBounds(272, 10, 120, 35);
@@ -451,6 +467,7 @@ public class frame {
             
             scoreLabel_2.addMouseListener(new MouseAdapter() {
                 public void mouseClicked(MouseEvent e) {
+             	   if (game.isGameOver())  return;
                 	VolumeDialog volumeDialog = new VolumeDialog(jframe);
                     volumeDialog.setVisible(true);
                 }
@@ -473,7 +490,7 @@ public class frame {
             scorePanel_3.setAlignmentX(Component.CENTER_ALIGNMENT);
             scorePanel_3.setAlignmentY(Component.CENTER_ALIGNMENT);  
             scoreLabel_3.addMouseListener(new MouseAdapter() {
-                public void mouseClicked(MouseEvent e) {System.exit(0);}
+                public void mouseClicked(MouseEvent e) {if (game.isGameOver())  return;System.exit(0);}
                 public void mouseEntered(MouseEvent e) {scoreLabel_3.setForeground(Color.WHITE);}
                 public void mouseExited(MouseEvent e) {scoreLabel_3.setForeground(new Color(173, 216, 230));}
             });
@@ -518,15 +535,16 @@ public class frame {
                 public void mouseClicked(MouseEvent e) {
                     int option = JOptionPane.showOptionDialog(
                         jframe,
-                        "Do you want to continue the current game or exit to the main menu?",
+                        "Sure ?",
                         "Home",
                         JOptionPane.YES_NO_OPTION,
                         JOptionPane.QUESTION_MESSAGE,
                         null,
-                        new String[]{"Continue", "Exit to Main Menu"},
+                        new String[]{"Continue", "Home"},
                         "Continue"
                     );
                     if (option == JOptionPane.NO_OPTION) {
+                    	 animateTitle = true;
                         gamePanel.setVisible(false);
                         startPanel.setVisible(true);
                         pauseCoverPanel.setVisible(false);
@@ -537,7 +555,7 @@ public class frame {
                 public void mouseExited(MouseEvent e) {homeLabel.setForeground(new Color(173, 216, 230));}
             });
             pausePanel.addMouseListener(new MouseAdapter() {
-                public void mouseClicked(MouseEvent e) {pauseGame();}
+                public void mouseClicked(MouseEvent e) { if (game.isGameOver())  return;pauseGame();}
                 public void mouseEntered(MouseEvent e) {pauseLabel.setForeground(Color.WHITE);}
                 public void mouseExited(MouseEvent e) {pauseLabel.setForeground(new Color(173, 216, 230));}
             });
@@ -615,12 +633,17 @@ public class frame {
             exit1.setAlignmentX(Component.CENTER_ALIGNMENT);
             exit1.setFont(pixelFont.deriveFont(25f));
             winGamePanel.add(exit1);
-
-            
+            animateLabel(gameOverLabel); 
+            animateLabel(winGameLabel);
             winGamePanel.setVisible(false);
             jframe.getContentPane().add(winGamePanel);
             homeLabel1.addMouseListener(new MouseAdapter() {
                 public void mouseClicked(MouseEvent e) {
+                	 animateTitle = true;
+                     if (titleLabelThread != null && titleLabelThread.isAlive()) {
+                         titleLabelThread.interrupt();
+                     }
+                     animateLabel(titleLabel);
                         gameOverPanel.setVisible(false);
                         startPanel.setVisible(true);
                         game.resetGame();
@@ -630,6 +653,11 @@ public class frame {
             });
             homeLabel2.addMouseListener(new MouseAdapter() {
                 public void mouseClicked(MouseEvent e) {
+                	 animateTitle = true;
+                     if (titleLabelThread != null && titleLabelThread.isAlive()) {
+                         titleLabelThread.interrupt(); 
+                     }
+                     animateLabel(titleLabel);
                 	 winGamePanel.setVisible(false);
                         startPanel.setVisible(true);
                         game.resetGame();
@@ -660,9 +688,48 @@ public class frame {
             LevelSelectDialog levelSelectDialog = new LevelSelectDialog(jframe, this);
             levelSelectDialog.setVisible(true);
         }
+
         public void updateCurrentBlock(boolean isNewBlock) {
-            ImageManager.updateCurrentBlock(gameGrid, game, isNewBlock);
-            if (isNewBlock) updateLevelLabel(); 
+        	ImageManager.updateCurrentBlock(gameGrid, game, isNewBlock);
+        	redrawGamePanel();
+            if (isNewBlock) updateLevelLabel();
+        
+        }
+        public void redrawGamePanel() {
+            BufferedImage buffer = new BufferedImage(gridPanel.getWidth(), gridPanel.getHeight(), BufferedImage.TYPE_INT_ARGB);
+            Graphics2D g2d = buffer.createGraphics();
+
+            g2d.setColor(Color.BLACK);
+            g2d.fillRect(0, 0, gridPanel.getWidth(), gridPanel.getHeight());
+
+            g2d.setColor(new Color(173, 216, 230));
+            g2d.drawRect(0, 0, gridPanel.getWidth() - 2, gridPanel.getHeight() - 2);
+
+            for (int[] block : game.getSetBlocks()) {
+                int blockType = game.getCurrentBlockType();
+                block currentBlock = new block(blockType);
+                Color blockColor = currentBlock.getBlockColor();
+                g2d.setColor(blockColor);
+                g2d.fillRect(block[0] * 25, block[1] * 25, 25, 25);
+                g2d.setColor(new Color(173, 216, 230));
+                g2d.drawRect(block[0] * 25, block[1] * 25, 25, 25);
+            }
+
+            int currentBlockType = game.getCurrentBlockType();
+            block currentBlock = new block(currentBlockType);
+            Color currentBlockColor = currentBlock.getBlockColor();
+            for (int[] blockPos : game.getCurrentBlockPos()) {
+                g2d.setColor(currentBlockColor);
+                g2d.fillRect(blockPos[0] * 25, blockPos[1] * 25, 25, 25);
+                g2d.setColor(new Color(173, 216, 230));
+                g2d.drawRect(blockPos[0] * 25, blockPos[1] * 25, 25, 25);
+            }
+
+            ghostBlockRenderer.drawGhostFrame(g2d, gameGrid);
+
+            gridPanel.getGraphics().drawImage(buffer, 0, 0, null);
+
+            g2d.dispose();
         }
         public void moveBlockDownFast() {
             while (!game.isTouchingBottomOrBlock()) {
@@ -671,12 +738,13 @@ public class frame {
                 updateCurrentBlock(false);
             }
         }
-        private void animateTitleLabel() {
-            titleLabelThread = new Thread(() -> {
+        private void animateLabel(JLabel label) {
+            Thread animationThread = new Thread(() -> {
                 int count = 0;
-                while (animateTitle) {
-                    if (count < 5) titleLabel.setLocation(titleLabel.getX(), titleLabel.getY() + 1);
-                    else if (count < 9) titleLabel.setLocation(titleLabel.getX(), titleLabel.getY() - 1);
+                boolean animate = true;
+                while (animate) {
+                    if (count < 5) label.setLocation(label.getX(), label.getY() + 1);
+                    else if (count < 9) label.setLocation(label.getX(), label.getY() - 1);
                     else count = 0;
                     try {
                         Thread.sleep(100);
@@ -684,7 +752,7 @@ public class frame {
                     count++;
                 }
             });
-            titleLabelThread.start();
+            animationThread.start();
         }
         private void gravity() {
             gameThread = new gravity(this);
@@ -713,16 +781,22 @@ public class frame {
                     }
                     game.nextBlock();
                     updateCurrentBlock(true);
-//                    game.shuffleAndAddToQueue();
                     updateQueue();
                 }
                 game.setHeldThisTurn(true);
             }
         }
         public void pauseGame() {
+        	
             if (game.isRunning()) {
                 game.setRunning(false);
                 gameThread.stopGame();
+                try {
+                    Thread.sleep(50);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                updateCurrentBlock(false);
                 pauseCoverPanel.setVisible(true);
             } else {
                 game.setRunning(true);
@@ -744,7 +818,6 @@ public class frame {
         }
         public void startGameWithLevel(int level) {
             animateTitle = false;
-            titleLabelThread.interrupt();
             startPanel.setVisible(false);
             gamePanel.setVisible(true);
             resetAllComponents();
@@ -755,8 +828,12 @@ public class frame {
             updateCurrentBlock(true); 
             gravity(); 
         }  
+
+        public String getCurrentBackgroundImagePath() {
+            return currentBackgroundImagePath;
+        }
+
         public logic getGame() {return game;}
-//        public GameState getState() {return getState;}
         private void updateHoldImage() {ImageManager.updateHoldImage(holdImgLabel, game);}
         public void updateScoreLabel() {ScoreManager.updateScoreLabel(scoreLabel, game);}
         public void updateLevelLabel() {ScoreManager.updateLevelLabel(levelLabel, game);}

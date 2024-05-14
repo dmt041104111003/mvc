@@ -2,21 +2,31 @@ package controller;
 
 import view.frame;
 
-public class gravity extends Thread {
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+public class gravity implements Runnable {
+    private static final ExecutorService executorService = Executors.newFixedThreadPool(1);
     private final frame gameFrame;
-    private boolean isRunning;
+    private volatile boolean isRunning;
+
     public gravity(frame gameFrame) {
         this.gameFrame = gameFrame;
-        this.isRunning = false;
     }
+
     public void startGame() {
         isRunning = true;
-        this.start();
+        executorService.execute(this);
     }
-    public void stopGame() {isRunning = false;}
+
+    public void stopGame() {
+        isRunning = false;
+    }
+
+    @Override
     public void run() {
         while (isRunning) {
-            try {
+            try { 
                 Thread.sleep(50);
             } catch (InterruptedException ignored) {}
 
@@ -26,8 +36,8 @@ public class gravity extends Thread {
                 gameFrame.updateCurrentBlock(false);
                 try {
                     for (int i = 0; i < gameFrame.getGame().getFallDelay() / 50 && !gameFrame.getGame().isFastFall(); i++) 
-                        Thread.sleep(50);
-                    if (gameFrame.getGame().isFastFall()) Thread.sleep(50);
+                        Thread.sleep(15);
+                    if (gameFrame.getGame().isFastFall()) Thread.sleep(15);
                 } catch (InterruptedException ignored) {}
             } else {
                 gameFrame.getGame().addCurrentToSetBlock();

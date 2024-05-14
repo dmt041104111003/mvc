@@ -67,12 +67,7 @@ public class logic {
             setBlocks.add(new int[]{currentBlock.getBlockLocation()[i][0], currentBlock.getBlockLocation()[i][1]});
         }
     }
-//    private void updateFallDelayIfLevelChanged(int newLevel) {
-//        if (newLevel != level) {
-//            level = newLevel;
-//            fallDelay = GameRules.calculateFallDelay(level);
-//        }
-//    }
+
     public ArrayList<Integer> checkForFullRows() {
         ArrayList<Integer> rowsToRemove = new ArrayList<>();
         for (int i = 19; i > -1; i--) {
@@ -118,7 +113,14 @@ public class logic {
             }
         }
     }
-
+    public boolean isGameOver() {
+        for (int i = 0; i < 4; i++) {
+            if (currentBlock.getBlockLocation()[i][1] == 0) {
+                return true;
+            }
+        }
+        return false;
+    }
     public void rotateBlock() {
         BlockOperations.updatePreviousBlockPos(currentBlock, previousBlockPos);
         BlockOperations.rotateBlock(currentBlock, setBlocks);
@@ -229,6 +231,72 @@ public class logic {
     }
     public void updatePreviousBlockPos() {
         BlockOperations.updatePreviousBlockPos(currentBlock, previousBlockPos);
+    }
+    public boolean isOccupied(int x, int y) {
+        for (int[] block : setBlocks) {
+            if (block[0] == x && block[1] == y) {
+                return true;
+            }
+        }
+        return false;
+    }
+    public boolean canMove(int[][] newPos) {
+        for (int[] pos : newPos) {
+            if (pos[0] < 0 || pos[0] >= 10 || pos[1] >= 20 || isOccupied(pos[0], pos[1])) {
+                return false;
+            }
+        }
+        return true;
+    }
+    private int[][] currentBlockPos = new int[4][2];
+	private int currentBlockType;
+	private int[] blockTypes;
+
+    public void setCurrentBlockPos(int[][] newPos) {
+        for (int i = 0; i < 4; i++) {
+            currentBlockPos[i][0] = newPos[i][0];
+            currentBlockPos[i][1] = newPos[i][1];
+        }
+    }
+    public void rotateBlockP(int[][] newPos) {
+        int[][] rotatedPos = rotateBlockPos(getCurrentBlockPos());
+        if (canMove(rotatedPos)) {
+            setCurrentBlockPos(rotatedPos);
+        } 
+    }
+
+    private int[][] rotateBlockPos(int[][] pos) {
+        int[][] newPos = new int[4][2];
+        int offsetX = pos[0][0];
+        int offsetY = pos[0][1];
+        
+        for (int i = 0; i < 4; i++) {
+            int x = pos[i][0] - offsetX;
+            int y = pos[i][1] - offsetY;
+            newPos[i][0] = offsetX - y;
+            newPos[i][1] = offsetY + x;
+        }
+        
+        return newPos;
+    }
+    public int getBlockTypeAt(int x, int y) {
+        for (int[] block : currentBlockPos) {
+            if (block[0] == x && block[1] == y) {
+                return currentBlockType;
+            }
+        }
+        
+        for (int[] block : setBlocks) {
+            if (block[0] == x && block[1] == y) {
+                return blockTypes[block[2]];
+            }
+        }
+        
+        return -1; 
+    }
+
+    public block getCurrentBlock() {
+        return currentBlock;
     }
     
 }

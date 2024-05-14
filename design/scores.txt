@@ -8,3 +8,4 @@ hưng|0
 over|500
 70|70000
 gggggggggg|0
+g|0
